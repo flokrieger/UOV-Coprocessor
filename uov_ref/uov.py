@@ -587,7 +587,7 @@ def katTest(file, uov_name, compact, doBlinding=False):
         exit(1)
       assert cpk[0].hex().upper() + uov.matrixToBytes(cpk[1], True).hex().upper() == t[3]
     else:
-      if not uov.doBlinding: # TODO
+      if not uov.doBlinding:
         esk_string = esk[0].hex().upper()
         esk_string += uov.matrixToBytesColMaj([esk[1][:uov.v,:uov.m]]).hex().upper()
         esk_string += uov.matrixToBytes(esk[2], True).hex().upper()
