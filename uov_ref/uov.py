@@ -410,7 +410,7 @@ class UOV:
 
     augmented_matrix = A.augment(matrix(self.m,1,y))
     ef_matrix = self._echelonForm(augmented_matrix)
-    if augmented_matrix is None:
+    if ef_matrix is None:
       return None
 
     A = ef_matrix[:,0:self.m]
