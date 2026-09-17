@@ -1,3 +1,6 @@
+cw/data
+cw/.venv
+
 rtl/vitis_hls_export
 
 scripts/vitis_hls_uov
@@ -10,3 +13,4 @@ uov_ref/data
 *.log
 *.jou
 *.str
+__pycache__/

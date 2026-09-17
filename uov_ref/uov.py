@@ -13,34 +13,34 @@ NUM_KAT_TESTS = 5          # Number of KAT tests for each security level.
                            # https://drive.google.com/file/d/1UJ4C6yAHXrNGpk6Xpzg8IkeNWVR4IbX1/view
                            # There, the UOV team hosts the full set of KAT tests (~2GB)
 class NIST_KAT_DRBG:
-    def __init__(self, seed):
-        self.seed_length = 48
-        assert len(seed) == self.seed_length
-        self.key = b'\x00' * 32
-        self.ctr = b'\x00' * 16
-        update = self.get_bytes(self.seed_length)
-        update = bytes(a^b for a,b in zip(update,seed))
-        self.key = update[:32]
-        self.ctr = update[32:]
+  def __init__(self, seed):
+    self.seed_length = 48
+    assert len(seed) == self.seed_length
+    self.key = b'\x00' * 32
+    self.ctr = b'\x00' * 16
+    update = self.get_bytes(self.seed_length)
+    update = bytes(a^b for a,b in zip(update,seed))
+    self.key = update[:32]
+    self.ctr = update[32:]
 
-    def __increment_ctr(self):
-        x = int.from_bytes(self.ctr, 'big') + 1
-        self.ctr = x.to_bytes(16, byteorder='big')
+  def __increment_ctr(self):
+    x = int.from_bytes(self.ctr, 'big') + 1
+    self.ctr = x.to_bytes(16, byteorder='big')
 
-    def get_bytes(self, num_bytes):
-        tmp = b''
-        cipher = AES.new(self.key, AES.MODE_ECB)
-        while len(tmp) < num_bytes:
-            self.__increment_ctr()
-            tmp  += cipher.encrypt(self.ctr)
-        return tmp[:num_bytes]
+  def get_bytes(self, num_bytes):
+    tmp = b''
+    cipher = AES.new(self.key, AES.MODE_ECB)
+    while len(tmp) < num_bytes:
+      self.__increment_ctr()
+      tmp  += cipher.encrypt(self.ctr)
+    return tmp[:num_bytes]
 
-    def random_bytes(self, num_bytes):
-        output_bytes = self.get_bytes(num_bytes)
-        update = self.get_bytes(48)
-        self.key = update[:32]
-        self.ctr = update[32:]
-        return output_bytes
+  def random_bytes(self, num_bytes):
+    output_bytes = self.get_bytes(num_bytes)
+    update = self.get_bytes(48)
+    self.key = update[:32]
+    self.ctr = update[32:]
+    return output_bytes
 
 drbg    = NIST_KAT_DRBG(bytes([i for i in range(48)]))
 
@@ -95,12 +95,12 @@ DEFAULT_PARAMETERS = {
 }
 
 def aes_ctr_prng(key: bytes, initial_counter_block: bytes, out_len: int) -> bytes:
-    if len(initial_counter_block) != 16:
-        raise ValueError("counter block must be 16 bytes")
-    ctr_int = int.from_bytes(initial_counter_block, "big")  # define endianness!
-    ctr = Counter.new(128, initial_value=ctr_int)
-    cipher = AES.new(key, AES.MODE_CTR, counter=ctr)
-    return cipher.encrypt(b"\x00" * out_len)
+  if len(initial_counter_block) != 16:
+    raise ValueError("counter block must be 16 bytes")
+  ctr_int = int.from_bytes(initial_counter_block, "big")  # define endianness!
+  ctr = Counter.new(128, initial_value=ctr_int)
+  cipher = AES.new(key, AES.MODE_CTR, counter=ctr)
+  return cipher.encrypt(b"\x00" * out_len)
 
 
 def writeElements(name, elements):
@@ -160,7 +160,7 @@ class UOV:
     for c in range(cols):
       for r in range(rows):
         for i in range(n_mat):
-            out.append(int(matrices[i][r, c].to_integer()))
+          out.append(int(matrices[i][r, c].to_integer()))
 
     if self.logq == 8:
       return bytes(out)
@@ -174,10 +174,10 @@ class UOV:
 
     out = bytearray()
     for r in range(rows):
-        c_start = r if triangular else 0
-        for c in range(c_start, cols):
-            for i in range(n_mat):
-                out.append(int(matrices[i][r, c].to_integer()))
+      c_start = r if triangular else 0
+      for c in range(c_start, cols):
+        for i in range(n_mat):
+          out.append(int(matrices[i][r, c].to_integer()))
     
     if self.logq == 8:
       return bytes(out)
@@ -194,10 +194,10 @@ class UOV:
       elements = self.bytesToNibbles(bytestring)
 
     for c in range(cols):
-        for r in range(rows):
-            for i in range(n_mat):
-                mats[i][r, c] = self.F.from_integer(elements[idx])
-                idx += 1
+      for r in range(rows):
+        for i in range(n_mat):
+          mats[i][r, c] = self.F.from_integer(elements[idx])
+          idx += 1
 
     return mats
 
@@ -211,17 +211,17 @@ class UOV:
       elements = self.bytesToNibbles(bytestring)
 
     for r in range(rows):
-        c_start = r if triangular else 0
-        for c in range(c_start,cols):
-            for i in range(n_mat):
-                mats[i][r, c] = self.F.from_integer(elements[idx])
-                idx += 1
+      c_start = r if triangular else 0
+      for c in range(c_start,cols):
+        for i in range(n_mat):
+          mats[i][r, c] = self.F.from_integer(elements[idx])
+          idx += 1
 
-        if triangular:
-            # explicitly zero below diagonal in this column
-            for r in range(c + 1, rows):
-                for i in range(n_mat):
-                    mats[i][r, c] = self.F(0)
+      if triangular:
+        # explicitly zero below diagonal in this column
+        for r in range(c + 1, rows):
+          for i in range(n_mat):
+            mats[i][r, c] = self.F(0)
 
     return mats
 
@@ -273,9 +273,9 @@ class UOV:
   def _getRandomInvertibleMatrix(self, size):
     ''' Samples a uniformly random invertible matrix of size x size '''
     while True:
-        M = random_matrix(self.F, size, size)
-        if M.is_invertible():
-            return M
+      M = random_matrix(self.F, size, size)
+      if M.is_invertible():
+        return M
 
   def _getRandomLUMatrix(self, blinding_aes_seed, ctr=0):
     ''' Implements the LU-based random invertible matrix 
@@ -344,54 +344,54 @@ class UOV:
   
 
   def _echelonForm(self,B):
-        ''' Implementation of Echelon Form computation as done in hardware '''
-        assert B.nrows() == self.m
-        assert B.ncols() == self.m + 1
+    ''' Implementation of Echelon Form computation as done in hardware '''
+    assert B.nrows() == self.m
+    assert B.ncols() == self.m + 1
 
-        L = B
-        singular = False
-        W_FE = 128 // self.logq
-        nr_slices = self.m // W_FE + 1  # +1 covers the augmented RHS column
-        for pivot_row_idx in range(self.m):
-          taken_idx = None
-          slice_start_idx = pivot_row_idx // W_FE
+    L = B
+    singular = False
+    W_FE = 128 // self.logq
+    nr_slices = self.m // W_FE + 1  # +1 covers the augmented RHS column
+    for pivot_row_idx in range(self.m):
+      taken_idx = None
+      slice_start_idx = pivot_row_idx // W_FE
 
-          # conditionally add all elements to get non-zero pivot
-          slice_idx = slice_start_idx
+      # conditionally add all elements to get non-zero pivot
+      slice_idx = slice_start_idx
+      L_slice = L[:,slice_idx*W_FE:(slice_idx+1)*W_FE]
+      taken_idx = None
+      for row_idx in range(pivot_row_idx+1, self.m):
+        if L_slice[pivot_row_idx,pivot_row_idx%W_FE] == 0 and L_slice[row_idx,pivot_row_idx%W_FE] != 0:
+          L_slice[pivot_row_idx,:] += L_slice[row_idx,:]
+          taken_idx = row_idx
+
+      if L_slice[pivot_row_idx, pivot_row_idx%W_FE] == 0:
+        singular = True
+        piv_inverse = 0
+      else:
+        piv_inverse = L_slice[pivot_row_idx, pivot_row_idx%W_FE]**-1
+
+      L_slice[pivot_row_idx,:] = L_slice[pivot_row_idx,:] * piv_inverse
+      L.set_block(0, slice_idx*W_FE, L_slice)
+
+      # remaining slices:
+      for slice_idx in range(slice_start_idx+1, nr_slices):
+        L_slice = L[:,slice_idx*W_FE:(slice_idx+1)*W_FE]
+        if taken_idx is not None:
+          L_slice[pivot_row_idx,:] += L_slice[taken_idx,:]
+
+        L_slice[pivot_row_idx,:] = L_slice[pivot_row_idx,:] * piv_inverse
+        L.set_block(0, slice_idx*W_FE, L_slice)
+
+      # multiply and add pivot row to other rows:
+      for row_idx in range(pivot_row_idx+1, self.m):
+        val = L[row_idx, pivot_row_idx]
+        for slice_idx in range(slice_start_idx, nr_slices):
           L_slice = L[:,slice_idx*W_FE:(slice_idx+1)*W_FE]
-          taken_idx = None
-          for row_idx in range(pivot_row_idx+1, self.m):
-            if L_slice[pivot_row_idx,pivot_row_idx%W_FE] == 0 and L_slice[row_idx,pivot_row_idx%W_FE] != 0:
-              L_slice[pivot_row_idx,:] += L_slice[row_idx,:]
-              taken_idx = row_idx
-
-          if L_slice[pivot_row_idx, pivot_row_idx%W_FE] == 0:
-            singular = True
-            piv_inverse = 0
-          else:
-            piv_inverse = L_slice[pivot_row_idx, pivot_row_idx%W_FE]**-1
-
-          L_slice[pivot_row_idx,:] = L_slice[pivot_row_idx,:] * piv_inverse
+          L_slice[row_idx,:] += val * L_slice[pivot_row_idx,:]
           L.set_block(0, slice_idx*W_FE, L_slice)
 
-          # remaining slices:
-          for slice_idx in range(slice_start_idx+1, nr_slices):
-            L_slice = L[:,slice_idx*W_FE:(slice_idx+1)*W_FE]
-            if taken_idx is not None:
-              L_slice[pivot_row_idx,:] += L_slice[taken_idx,:]
-
-            L_slice[pivot_row_idx,:] = L_slice[pivot_row_idx,:] * piv_inverse
-            L.set_block(0, slice_idx*W_FE, L_slice)
-
-          # multiply and add pivot row to other rows:
-          for row_idx in range(pivot_row_idx+1, self.m):
-            val = L[row_idx, pivot_row_idx]
-            for slice_idx in range(slice_start_idx, nr_slices):
-              L_slice = L[:,slice_idx*W_FE:(slice_idx+1)*W_FE]
-              L_slice[row_idx,:] += val * L_slice[pivot_row_idx,:]
-              L.set_block(0, slice_idx*W_FE, L_slice)
-
-        return L if not singular else None
+    return L if not singular else None
 
   def _backSubstitution(self,B,y):
     ''' Implementation of back substitution computation as done in hardware '''
@@ -406,26 +406,26 @@ class UOV:
     return matrix(self.F, self.m, 1, list(y))
       
   def _gaussianElimination(self, A, y):
-        ''' Implementation of Gaussian Elimination as done in hardware '''
+    ''' Implementation of Gaussian Elimination as done in hardware '''
 
-        augmented_matrix = A.augment(matrix(self.m,1,y))
-        ef_matrix = self._echelonForm(augmented_matrix)
-        if augmented_matrix is None:
-          return None
+    augmented_matrix = A.augment(matrix(self.m,1,y))
+    ef_matrix = self._echelonForm(augmented_matrix)
+    if augmented_matrix is None:
+      return None
 
-        A = ef_matrix[:,0:self.m]
-        y = ef_matrix.column(self.m)
+    A = ef_matrix[:,0:self.m]
+    y = ef_matrix.column(self.m)
 
-        last_row_zero = True
-        for i in range(self.m):
-            if A[self.m-1,i] != 0:
-                last_row_zero = False
-                break
+    last_row_zero = True
+    for i in range(self.m):
+      if A[self.m-1,i] != 0:
+        last_row_zero = False
+        break
 
-        if last_row_zero:
-            return None
+    if last_row_zero:
+      return None
 
-        return self._backSubstitution(A,y)
+    return self._backSubstitution(A,y)
     
   def sign(self, esk, msg, cpk, debug_output=False):
     ''' UOV's signing operation using esk with message msg. If debug_output is enabled,
@@ -481,14 +481,14 @@ class UOV:
       x = self._gaussianElimination(L, t_minus_y)
 
       if x is not None:
-         if debug_output:
+        if debug_output:
           writeVector("y_ref_" + self.name, x)
 
-         # Compute the signature s:
-         s = block_matrix([[v],[matrix(self.F, self.m, 1)]]) + O_bar_blinded * x
-         if debug_output:
+        # Compute the signature s:
+        s = block_matrix([[v],[matrix(self.F, self.m, 1)]]) + O_bar_blinded * x
+        if debug_output:
           writeVector("s_ref_" + self.name, s)
-         return s, salt
+        return s, salt
       
       elif debug_output:
         print("ERROR! No solution exists on the first try. Take another seed by re-executing this script")
@@ -504,10 +504,10 @@ class UOV:
     t_p = matrix(self.F, self.m, 1)
     ok = 1
     for i in range(self.m):
-       t_p[i,0] = (s.transpose() * P[i] * s)[0,0]
-       if t[i,0] != t_p[i,0]:
-          print("Error:", i, t[i,0], t_p[i,0])
-          ok = 0
+      t_p[i,0] = (s.transpose() * P[i] * s)[0,0]
+      if t[i,0] != t_p[i,0]:
+        print("Error:", i, t[i,0], t_p[i,0])
+        ok = 0
     return ok
 
 
@@ -601,9 +601,9 @@ def katTest(file, uov_name, compact, doBlinding=False):
       assert epk_string == t[3]
 
     if (msg + uov.matrixToBytes([s],False) + salt).hex().upper() != t[6]:
-       print("error sig", i, (msg + uov.matrixToBytes([s],False) + salt).hex().upper())
-       print("          ", t[6])
-       exit(2)
+      print("error sig", i, (msg + uov.matrixToBytes([s],False) + salt).hex().upper())
+      print("          ", t[6])
+      exit(2)
 
 def writeUOVTests(sec_lvl, msg_len):
   ''' Executes UOV to generate hardware test vectors for sec_lvl and msg_len '''
