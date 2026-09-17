@@ -5,6 +5,8 @@ scripts/vitis_hls.log
 scripts/vivado_uov_chipWhisperer
 scripts/.Xil
 
+uov_ref/data
+
 *.log
 *.jou
 *.str
