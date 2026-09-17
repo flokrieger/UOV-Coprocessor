@@ -8,7 +8,7 @@ from Crypto.Util import Counter
 OUTPUT_PATH   = "./data/"  # Path for storing the reference data for the hardware
 KAT_PATH      = "./kat/"   # Path for storing the reference data for the hardware
 NUM_KAT_TESTS = 5          # Number of KAT tests for each security level.
-                           # We only include 5 KAT tests per security level due to size constraints
+                           # We only include 5 KAT tests per security level due to storage size
                            # If you want to use more KAT tests, please refer to
                            # https://drive.google.com/file/d/1UJ4C6yAHXrNGpk6Xpzg8IkeNWVR4IbX1/view
                            # There, the UOV team hosts the full set of KAT tests (~2GB)
