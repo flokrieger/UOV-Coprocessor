@@ -3,10 +3,10 @@ cw/.venv
 
 rtl/vitis_hls_export
 
-scripts/vitis_hls_uov
-scripts/vitis_hls.log
-scripts/vivado_uov_chipWhisperer
-scripts/.Xil
+vitis/vitis_hls_uov
+vitis/vitis_hls.log
+vitis/vivado_uov_chipWhisperer
+vitis/.Xil
 
 uov_ref/data
 
