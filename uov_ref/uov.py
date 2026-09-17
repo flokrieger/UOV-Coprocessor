@@ -1,12 +1,17 @@
-from sage.all import GF, matrix, block_matrix, identity_matrix, random_matrix, vector, PolynomialRing
+from sage.all import GF, matrix, block_matrix, identity_matrix, random_matrix, PolynomialRing
 from random import randint, randbytes
 from math import log2,ceil 
 from hashlib import shake_256
 from Crypto.Cipher import AES
 from Crypto.Util import Counter
 
-PATH          = "./data/"  # Path for storing the reference data for the hardware
-NUM_KAT_TESTS = 4          # Number of KAT tests for each security level
+OUTPUT_PATH   = "./data/"  # Path for storing the reference data for the hardware
+KAT_PATH      = "./kat/"   # Path for storing the reference data for the hardware
+NUM_KAT_TESTS = 5          # Number of KAT tests for each security level.
+                           # We only include 5 KAT tests per security level due to size constraints
+                           # If you want to use more KAT tests, please refer to
+                           # https://drive.google.com/file/d/1UJ4C6yAHXrNGpk6Xpzg8IkeNWVR4IbX1/view
+                           # There, the UOV team hosts the full set of KAT tests (~2GB)
 class NIST_KAT_DRBG:
     def __init__(self, seed):
         self.seed_length = 48
@@ -40,7 +45,7 @@ class NIST_KAT_DRBG:
 drbg    = NIST_KAT_DRBG(bytes([i for i in range(48)]))
 
 
-# Parameters for UOV, including the toy parameter set:
+# Round 2 Parameters for UOV, including the toy parameter set:
 DEFAULT_PARAMETERS = {
     "uov-Ip": {
         "name": "uov-Ip",
@@ -99,17 +104,17 @@ def aes_ctr_prng(key: bytes, initial_counter_block: bytes, out_len: int) -> byte
 
 
 def writeElements(name, elements):
-  with open(PATH + name + ".txt", "w") as f:
+  with open(OUTPUT_PATH + name + ".txt", "w") as f:
     for e in elements:
       f.write(hex(e)[2:] + " ")
 
 def writeVector(name, vec):
-  with open(PATH + name + ".txt", "w") as f:
+  with open(OUTPUT_PATH + name + ".txt", "w") as f:
     for r in range(vec.nrows()):
       f.write(str(r) + " " + hex(vec[r,0].to_integer())[2:] + "\n")
 
 def writeMatrix(name, mat):
-  with open(PATH + name + ".txt", "w") as f:
+  with open(OUTPUT_PATH + name + ".txt", "w") as f:
     for r in range(mat.ncols()):
       for c in range(mat.nrows()):
         f.write(str(r) + " " + str(c) + " " + hex(mat[c,r].to_integer())[2:] + "\n")
@@ -612,7 +617,7 @@ def writeUOVTests(sec_lvl, msg_len):
   seed_pk = cpk[0]
   writeElements("seed_pk_" + sec_lvl, seed_pk)
   
-  with open(PATH+"p3_ref_"+ sec_lvl +"_normalOrder.txt", "w") as f:
+  with open(OUTPUT_PATH+"p3_ref_"+ sec_lvl +"_normalOrder.txt", "w") as f:
     for r in range(uov.m):
       for c in range(r,uov.m):
         for m in range(0,uov.m,16):
@@ -650,16 +655,15 @@ if __name__=="__main__":
   writeUOVTests("uov-toy", msg_len)
 
   # Check this implementation against the KAT tests:
-  katTest("/home/fkrieger/Documents/Projects/Rigoletto/uov_reference/KAT/Ip-pkc-skc/PQCsignKAT_32.rsp", "uov-Ip", True)
-  katTest("/home/fkrieger/Documents/Projects/Rigoletto/uov_reference/KAT/Ip/PQCsignKAT_237896.rsp", "uov-Ip", False)
+  katTest(KAT_PATH + "/Ip-pkc-skc/PQCsignKAT_32.rsp", "uov-Ip", True)
+  katTest(KAT_PATH + "/Ip/PQCsignKAT_237896.rsp",     "uov-Ip", False)
 
-  katTest("/home/fkrieger/Documents/Projects/Rigoletto/uov_reference/KAT/Is-pkc-skc/PQCsignKAT_32.rsp", "uov-Is", True)
-  katTest("/home/fkrieger/Documents/Projects/Rigoletto/uov_reference/KAT/Is/PQCsignKAT_348704.rsp", "uov-Is", False)
+  katTest(KAT_PATH + "/Is-pkc-skc/PQCsignKAT_32.rsp", "uov-Is", True)
+  katTest(KAT_PATH + "/Is/PQCsignKAT_348704.rsp",     "uov-Is", False)
   
-  katTest("/home/fkrieger/Documents/Projects/Rigoletto/uov_reference/KAT/III-pkc-skc/PQCsignKAT_32.rsp", "uov-III", True)
-  katTest("/home/fkrieger/Documents/Projects/Rigoletto/uov_reference/KAT/III/PQCsignKAT_1044320.rsp", "uov-III", False)
+  katTest(KAT_PATH + "/III-pkc-skc/PQCsignKAT_32.rsp", "uov-III", True)
+  katTest(KAT_PATH + "/III/PQCsignKAT_1044320.rsp",    "uov-III", False)
 
-  katTest("/home/fkrieger/Documents/Projects/Rigoletto/uov_reference/KAT/V-pkc-skc/PQCsignKAT_32.rsp", "uov-V", True)
-  katTest("/home/fkrieger/Documents/Projects/Rigoletto/uov_reference/KAT/V/PQCsignKAT_2436704.rsp", "uov-V", False)
+  katTest(KAT_PATH + "/V-pkc-skc/PQCsignKAT_32.rsp", "uov-V", True)
 
   print("SUCCESS: Tests generated and compared to KAT data")
