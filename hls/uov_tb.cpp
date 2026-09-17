@@ -6,7 +6,7 @@
 #include "hls_stream.h"
 
 // Location of prepared reference data
-#define DATA_DIR "../../../../../py_uov/data/"
+#define DATA_DIR "../../../../../uov_ref/data/"
 
 // Struct holding the test cases for each security level:
 typedef struct {

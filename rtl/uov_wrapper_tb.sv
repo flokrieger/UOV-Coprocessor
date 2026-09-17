@@ -2,7 +2,7 @@ module uov_wrapper_tb();
   import uov_pkg::*;
 
   // Path to reference data files
-  localparam string DATA_DIR = "../../../../../../py_uov/data/";
+  localparam string DATA_DIR = "../../../../../../uov_ref/data/";
   int errors = 0;
 
   logic clk = 0;
