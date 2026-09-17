@@ -304,7 +304,7 @@ class UOV:
 
       off = p1_bytes + (j * self.m + j) * self.m + slice_off
       b = [ks[off + k] % self.q for k in range(4)]
-      non_zero = b[0] if b[0] else b[1] if b[1] else b[2] if b[2] else b[3] if b[3] else 0xc5 # select non-zero field element
+      non_zero = b[0] if b[0] else b[1] if b[1] else b[2] if b[2] else b[3] if b[3] else (0xc5 % self.q) # select non-zero field element
       U[j, j] = self.F.from_integer(non_zero)
 
     return L * U
@@ -648,6 +648,7 @@ if __name__=="__main__":
   salt_func = NIST_KAT_DRBG(randbytes(48)).random_bytes
 
   # Generate reference data for testing the hardware:
+  print("Generate reference data for testing the hardware...")
   msg_len = 15 # message length in bytes
   writeUOVTests("uov-Ip",  msg_len)
   writeUOVTests("uov-III", msg_len)
@@ -655,6 +656,7 @@ if __name__=="__main__":
   writeUOVTests("uov-toy", msg_len)
 
   # Check this implementation against the KAT tests:
+  print("Check the implementation against KAT files...")
   katTest(KAT_PATH + "/Ip-pkc-skc/PQCsignKAT_32.rsp", "uov-Ip", True)
   katTest(KAT_PATH + "/Ip/PQCsignKAT_237896.rsp",     "uov-Ip", False)
 
