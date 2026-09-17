@@ -119,7 +119,7 @@ void matrixCore(
     word_t bram_ty[BRAM_ty_DEPTH],
     word_t bram_vs_a[BRAM_vs_DEPTH],
     word_t bram_vs_b[BRAM_vs_DEPTH],
-    hls::stream<word_t> &data_in) {
+    hls::stream<word_t> &p3key) {
 
   #pragma HLS PIPELINE II = 1
   #pragma HLS DEPENDENCE variable = bram_O inter false
@@ -308,10 +308,10 @@ void matrixCore(
   wordToFieldElement(bram_vs_rd_data_b, bram_vs_rdb_byte_offset, &bram_vs_rd_byte_b);
 
   // P3 stream read end:
-  word_t data_in_word;
+  word_t p3key_word;
   if (is_p3) {
-    if (!data_in.read_nb(data_in_word)) {
-      data_in_word = word_t(0);
+    if (!p3key.read_nb(p3key_word)) {
+      p3key_word = word_t(0);
     }
   }
 
@@ -389,7 +389,7 @@ void matrixCore(
   } break;
 
   case sPs: {
-    datapath_inc = is_p3 ? data_in_word : aes_P_out;
+    datapath_inc = is_p3 ? p3key_word : aes_P_out;
     datapath_init = bram_ty_rd_data;
   } break;
 
@@ -458,7 +458,7 @@ void matrixSubsystem(
     word_t bram_ty[BRAM_ty_DEPTH],
     word_t bram_vs_a[BRAM_vs_DEPTH],
     word_t bram_vs_b[BRAM_vs_DEPTH],
-    hls::stream<word_t> &data_in ) {
+    hls::stream<word_t> &p3key ) {
 
   #pragma HLS INTERFACE ap_none port = seed_pk
   #pragma HLS ARRAY_RESHAPE variable = seed_pk complete dim = 1
@@ -483,11 +483,11 @@ void matrixSubsystem(
   while (done == 0) {
     #pragma HLS pipeline II = 1
 
-    bit_t was_empty = data_in.empty();
+    bit_t was_empty = p3key.empty();
     matrixCore(operation, slice_idx, row_idx, col_idx, dest_row_idx,
                dest_col_idx, acc_idx, uov_m, uov_v, uov_n, uov_n_padded,
                p1_bytes, rng_en, bram_O, bram_LR, bram_T, bram_ty,
-               bram_vs_a, bram_vs_b, data_in);
+               bram_vs_a, bram_vs_b, p3key);
 
     if (operation == OL) {
       
@@ -632,7 +632,7 @@ void uov(uint16_t msg_len_bytes,
          word_t bram_ty[BRAM_ty_DEPTH],
          word_t bram_vs_a[BRAM_vs_DEPTH],
          word_t bram_vs_b[BRAM_vs_DEPTH],
-         hls::stream<word_t> &data_in,
+         hls::stream<word_t> &p3key,
          volatile bit_t *trigger_uov) {
 
   // Port interfaces:
@@ -654,7 +654,7 @@ void uov(uint16_t msg_len_bytes,
   #pragma HLS INTERFACE bram port = bram_ty latency = 2 depth = BRAM_ty_DEPTH
   #pragma HLS INTERFACE bram port = bram_vs_a latency = 2 depth = BRAM_vs_DEPTH
   #pragma HLS INTERFACE bram port = bram_vs_b latency = 2 depth = BRAM_vs_DEPTH
-  #pragma HLS INTERFACE axis port = data_in
+  #pragma HLS INTERFACE axis port = p3key
   #pragma HLS INTERFACE ap_none port = trigger_uov
 
   #pragma HLS ALLOCATION function instances = matrixSubsystem limit = 1
@@ -673,7 +673,7 @@ void uov(uint16_t msg_len_bytes,
     // Verification:
     matrixSubsystem(0, 1, do_blinding, uov_m, uov_v, uov_n, uov_n_padded, p1_bytes,
                  nr_slices, ctr, rng_en, seed_pk, bram_O, bram_LR, bram_T,
-                 bram_ty, bram_vs_a, bram_vs_b, data_in);
+                 bram_ty, bram_vs_a, bram_vs_b, p3key);
     return;
   }
 
@@ -691,7 +691,7 @@ void uov(uint16_t msg_len_bytes,
     *trigger_uov = 1;
     matrixSubsystem(0, 0, do_blinding, uov_m, uov_v, uov_n, uov_n_padded, p1_bytes,
                  nr_slices, ctr, rng_en, seed_pk, bram_O, bram_LR, bram_T,
-                 bram_ty, bram_vs_a, bram_vs_b, data_in);
+                 bram_ty, bram_vs_a, bram_vs_b, p3key);
     *trigger_uov = 0;
 
     // solve linear equation system:
@@ -710,6 +710,6 @@ void uov(uint16_t msg_len_bytes,
     // compute signature:
     matrixSubsystem(1, 0, do_blinding, uov_m, uov_v, uov_n, uov_n_padded, p1_bytes,
                  nr_slices, ctr, rng_en, seed_pk, bram_O, bram_LR, bram_T,
-                 bram_ty, bram_vs_a, bram_vs_b, data_in);
+                 bram_ty, bram_vs_a, bram_vs_b, p3key);
   }
 }

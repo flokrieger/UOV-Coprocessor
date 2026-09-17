@@ -1,4 +1,10 @@
+rtl/vitis_hls_export
+
 scripts/vitis_hls_uov
 scripts/vitis_hls.log
-.clang-format
-rtl/vitis_hls_export
+scripts/vivado_uov_chipWhisperer
+scripts/.Xil
+
+*.log
+*.jou
+*.str

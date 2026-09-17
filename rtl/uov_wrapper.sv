@@ -1,0 +1,287 @@
+
+module UovWrapper 
+import uov_pkg::*;
+(
+  // Control interface
+  input   logic                           clk,
+  input   logic                           rst,
+  input   logic                           start,
+  output  logic                           idle,
+  output  logic                           ready,
+  output  logic                           done,
+
+  // UOV rundtime configuration:
+  input  logic [15:0]                     msg_len_bytes,
+  input  logic [10:0]                     uov_m,
+  input  logic [10:0]                     uov_v,
+  input  logic [10:0]                     uov_n,
+  input  logic [10:0]                     uov_n_padded,
+  input  logic [31:0]                     p1_bytes,
+  input  logic [2:0]                      nr_slices,
+  input  logic                            rng_en,
+  input  logic [AES_BITS-1:0]             seed_pk,
+  input  logic [AES_BITS-1:0]             seed_bl,
+  input  logic                            do_verif,
+  input  logic                            do_blinding,
+
+  // External memory interface:
+  input  logic [BRAM_AWIDTH_EXT_BITS-1:0] ext_rw_addr,
+  input  logic                            ext_wr_en,
+  output logic [BRAM_DWIDTH_BITS-1:0]     ext_rd_data,
+  input  logic [BRAM_DWIDTH_BITS-1:0]     ext_wr_data,
+
+  // Streaming interface for P3 during verification
+  input  logic [BRAM_DWIDTH_BITS-1:0]     axis_p3key_tdata,
+  input  logic                            axis_p3key_tvalid,
+  output logic                            axis_p3key_tready,
+  
+  // Trigger signal for TVLA:
+  output logic                            trigger_uov
+);
+
+  logic uov_start, uov_done, uov_idle, uov_ready;
+  assign uov_start = start;
+  assign done      = uov_done;
+  assign idle      = uov_idle;
+  assign ready     = uov_ready;
+
+  // spitting external address into addr and bram_sel:
+  addr_t ext_r_addr, ext_w_addr;
+  logic [2:0] ext_bram_sel;
+  assign ext_r_addr   = ext_rw_addr[$bits(ext_r_addr)-1:0];
+  assign ext_w_addr   = ext_rw_addr[$bits(ext_r_addr)-1:0];
+  assign ext_bram_sel = ext_rw_addr[31:29];
+
+  // BRAM_O (simple dual port):
+  word_t bram_O_rd_data, uov_bram_O_wr_data;
+  logic [31:0] uov_bram_O_rd_addr, uov_bram_O_wr_addr;
+  logic uov_bram_O_wr_en, uov_bram_O_en;
+  logic [15:0] uov_bram_O_wen16;
+  assign uov_bram_O_wr_en = uov_bram_O_en & |uov_bram_O_wen16;
+  s2p_ram_128x1536 bram_O_inst (
+      .clka         ( clk                                                                        ),
+      .clkb         ( clk                                                                        ),
+      .wea          ( rst ? ext_wr_en && ext_bram_sel == BRAM_O_SEL : uov_bram_O_wr_en           ),
+      .addra        ( rst ? ext_w_addr  : uov_bram_O_wr_addr[4 +: $clog2(BRAM_O_DEPTH)]          ),
+      .dina         ( rst ? ext_wr_data : uov_bram_O_wr_data                                     ),
+      .addrb        ( rst ? ext_r_addr  : uov_bram_O_rd_addr[4 +: $clog2(BRAM_O_DEPTH)]          ),
+      .doutb        ( bram_O_rd_data                                                             )
+  );
+
+  // BRAM_LR (true dual-port):
+  word_t bram_LR_rd_data_a, bram_LR_rd_data_b, uov_bram_LR_wr_data;
+  logic [31:0] uov_bram_LR_rd_addr, uov_bram_LR_wr_addr;
+  logic uov_bram_LR_wr_en, uov_bram_LR_en;
+  logic [15:0] uov_bram_LR_wen16;
+  assign uov_bram_LR_wr_en = uov_bram_LR_en & |uov_bram_LR_wen16;
+  ramt2p # (
+      .MEM_WIDTH    ( BRAM_DWIDTH_BITS      ),
+      .MEM_DEPTH    ( $clog2(BRAM_LR_DEPTH) ),
+      .READ_LATENCY ( BRAM_RD_LAT           ),
+      .OUTPUT_REG   ( 0                     ),
+      .MEM_TYPE     ( "fpga_block"          )
+  ) bram_LR_inst (
+      .clk    ( clk                                                                              ),
+      .wen_a  ( rst ? ext_wr_en && ext_bram_sel == BRAM_LR_SEL : uov_bram_LR_wr_en               ),
+      .addr_a ( rst ? ext_w_addr  : uov_bram_LR_wr_addr[4 +: $clog2(BRAM_LR_DEPTH)]              ),
+      .din_a  ( rst ? ext_wr_data : uov_bram_LR_wr_data                                          ),
+      .dout_a ( bram_LR_rd_data_a                                                                ),
+      .wen_b  ( 1'b0                                                                             ),
+      .addr_b ( rst ? ext_r_addr  : uov_bram_LR_rd_addr[4 +: $clog2(BRAM_LR_DEPTH)]              ),
+      .din_b  ( '0                                                                               ),
+      .dout_b ( bram_LR_rd_data_b                                                                )
+  );
+
+  // BRAM_T (simple dual port):
+  word_t bram_T_rd_data, uov_bram_T_wr_data;
+  logic [31:0] uov_bram_T_rd_addr, uov_bram_T_wr_addr;
+  logic uov_bram_T_wr_en, uov_bram_T_en;
+  logic [15:0] uov_bram_T_wen16;
+  assign uov_bram_T_wr_en = uov_bram_T_en & |uov_bram_T_wen16;
+  s2p_ram_128x1536 bram_T_inst (
+      .clka         ( clk                                                                        ),
+      .clkb         ( clk                                                                        ),
+      .wea          ( rst ? ext_wr_en && ext_bram_sel == BRAM_T_SEL : uov_bram_T_wr_en           ),
+      .addra        ( rst ? ext_w_addr  : uov_bram_T_wr_addr[4 +: $clog2(BRAM_T_DEPTH)]          ),
+      .dina         ( rst ? ext_wr_data : uov_bram_T_wr_data                                     ),
+      .addrb        ( rst ? ext_r_addr  : uov_bram_T_rd_addr[4 +: $clog2(BRAM_T_DEPTH)]          ),
+      .doutb        ( bram_T_rd_data                                                             )
+  );
+
+  // BRAM_ty (true dual-port):
+  word_t bram_ty_rd_data_a, bram_ty_rd_data_b, bram_ty_wr_data;
+  logic [31:0] bram_ty_rd_addr, bram_ty_wr_addr;
+  logic  bram_ty_wr_en, bram_ty_en;
+  logic [15:0] bram_ty_wen16;
+  assign bram_ty_wr_en = bram_ty_en & |bram_ty_wen16;
+
+  ram # (
+      .MEM_WIDTH    ( BRAM_DWIDTH_BITS      ),
+      .MEM_DEPTH    ( $clog2(BRAM_ty_DEPTH) ),
+      .READ_LATENCY ( BRAM_RD_LAT           ),
+      .OUTPUT_REG   ( 0                     ),
+      .MEM_TYPE     ( "fpga_block"          )
+  ) bram_ty_inst (
+      .clk   ( clk                                                                               ),
+      .wen   ( rst ? ext_wr_en && ext_bram_sel == BRAM_ty_SEL : bram_ty_wr_en                    ),
+      .waddr ( rst ? ext_w_addr  : bram_ty_wr_addr[4 +: $clog2(BRAM_ty_DEPTH)]                   ),
+      .din   ( rst ? ext_wr_data : bram_ty_wr_data                                               ),
+      .raddr ( rst ? ext_r_addr  : bram_ty_rd_addr[4 +: $clog2(BRAM_ty_DEPTH)]                   ),
+      .dout  ( bram_ty_rd_data_b                                                                 )
+  );
+
+  // BRAM_vs (true dual port):
+  word_t bram_vs_rd_data_a, uov_bram_vs_wr_data_a;
+  logic [31:0] uov_bram_vs_wr_addr_a, uov_bram_vs_rd_addr_a;
+  logic  uov_bram_vs_wr_en_a, uov_bram_vs_en_a, uov_bram_vs_en_b;
+  logic [15:0] uov_bram_vs_wen16_a;
+  assign uov_bram_vs_wr_en_a = uov_bram_vs_en_a & |uov_bram_vs_wen16_a;
+  word_t bram_vs_rd_data_b;
+  logic [31:0] uov_bram_vs_rd_addr_b;
+  ramt2p # (
+      .MEM_WIDTH    ( BRAM_DWIDTH_BITS      ),
+      .MEM_DEPTH    ( $clog2(BRAM_vs_DEPTH) ),
+      .READ_LATENCY ( BRAM_RD_LAT           ),
+      .OUTPUT_REG   ( 0                     ),
+      .MEM_TYPE     ( "fpga_block"          )
+  ) bram_vs_inst (
+      .clk          ( clk                                                                        ),
+      .wen_a        ( rst ? ext_wr_en && ext_bram_sel == BRAM_vs_SEL : uov_bram_vs_wr_en_a       ),
+      .addr_a       ( rst ? ext_r_addr  : uov_bram_vs_wr_en_a || (uov_bram_vs_en_a && !uov_bram_vs_en_b) ? uov_bram_vs_wr_addr_a[4 +: $clog2(BRAM_vs_DEPTH)] : uov_bram_vs_rd_addr_a[4 +: $clog2(BRAM_vs_DEPTH)] ),
+      .din_a        ( rst ? ext_wr_data : uov_bram_vs_wr_data_a                                  ),
+      .dout_a       ( bram_vs_rd_data_a                                                          ),
+      .wen_b        ( 1'b0                                                                       ),
+      .addr_b       ( uov_bram_vs_rd_addr_b[4 +: $clog2(BRAM_vs_DEPTH)]                          ),
+      .din_b        ( '0                                                                         ),
+      .dout_b       ( bram_vs_rd_data_b                                                          )
+  );
+
+  // UOV instance:
+  uov uov_inst (
+      // Basic control:
+      .ap_clk          ( clk                    ),
+      .ap_rst_n        ( ~rst                   ),
+      .ap_start        ( uov_start              ),
+      .ap_done         ( uov_done               ),
+      .ap_idle         ( uov_idle               ),
+      .ap_ready        ( uov_ready              ),
+      // UOV configuration:
+      .msg_len_bytes   ( msg_len_bytes          ),
+      .uov_m           ( uov_m                  ),
+      .uov_v           ( uov_v                  ),
+      .uov_n           ( uov_n                  ),
+      .uov_n_padded    ( uov_n_padded           ),
+      .p1_bytes        ( p1_bytes               ),
+      .nr_slices       ( nr_slices              ),
+      .seed_pk         ( seed_pk                ),
+      .seed_bl         ( seed_bl                ),
+      .rng_en          ( rng_en                 ),
+      .do_verif        ( do_verif               ),
+      .do_blinding     ( do_blinding            ),
+      .trigger_uov     ( trigger_uov            ),
+      // bram_O
+      .bram_O_Addr_A   ( uov_bram_O_wr_addr     ),
+      .bram_O_EN_A     ( uov_bram_O_en          ),
+      .bram_O_WEN_A    ( uov_bram_O_wen16       ),
+      .bram_O_Din_A    ( uov_bram_O_wr_data     ),
+      .bram_O_Dout_A   ( '0                     ),
+      .bram_O_Clk_A    (                        ),
+      .bram_O_Rst_A    (                        ),
+      .bram_O_Addr_B   ( uov_bram_O_rd_addr     ),
+      .bram_O_EN_B     (                        ),
+      .bram_O_WEN_B    (                        ),
+      .bram_O_Din_B    (                        ),
+      .bram_O_Dout_B   ( bram_O_rd_data         ),
+      .bram_O_Clk_B    (                        ),
+      .bram_O_Rst_B    (                        ),
+      // bram_LR
+      .bram_LR_Addr_A  ( uov_bram_LR_wr_addr    ),
+      .bram_LR_EN_A    ( uov_bram_LR_en         ),
+      .bram_LR_WEN_A   ( uov_bram_LR_wen16      ),
+      .bram_LR_Din_A   ( uov_bram_LR_wr_data    ),
+      .bram_LR_Dout_A  ( bram_LR_rd_data_a      ),
+      .bram_LR_Clk_A   (                        ),
+      .bram_LR_Rst_A   (                        ),
+      .bram_LR_Addr_B  ( uov_bram_LR_rd_addr    ),
+      .bram_LR_EN_B    (                        ),
+      .bram_LR_WEN_B   (                        ),
+      .bram_LR_Din_B   (                        ),
+      .bram_LR_Dout_B  ( bram_LR_rd_data_b      ),
+      .bram_LR_Clk_B   (                        ),
+      .bram_LR_Rst_B   (                        ),
+      // bram_T
+      .bram_T_Addr_A   ( uov_bram_T_wr_addr     ),
+      .bram_T_EN_A     ( uov_bram_T_en          ),
+      .bram_T_WEN_A    ( uov_bram_T_wen16       ),
+      .bram_T_Din_A    ( uov_bram_T_wr_data     ),
+      .bram_T_Dout_A   ( '0                     ),
+      .bram_T_Clk_A    (                        ),
+      .bram_T_Rst_A    (                        ),
+      .bram_T_Addr_B   ( uov_bram_T_rd_addr     ),
+      .bram_T_EN_B     (                        ),
+      .bram_T_WEN_B    (                        ),
+      .bram_T_Din_B    (                        ),
+      .bram_T_Dout_B   ( bram_T_rd_data         ),
+      .bram_T_Clk_B    (                        ),
+      .bram_T_Rst_B    (                        ),
+      // bram_ty
+      .bram_ty_Addr_A  ( bram_ty_wr_addr        ),
+      .bram_ty_EN_A    ( bram_ty_en             ),
+      .bram_ty_WEN_A   ( bram_ty_wen16          ),
+      .bram_ty_Din_A   ( bram_ty_wr_data        ),
+      .bram_ty_Dout_A  ( '0                     ),
+      .bram_ty_Clk_A   (                        ),
+      .bram_ty_Rst_A   (                        ),
+      .bram_ty_Addr_B  ( bram_ty_rd_addr        ),
+      .bram_ty_EN_B    (                        ),
+      .bram_ty_WEN_B   (                        ),
+      .bram_ty_Din_B   (                        ),
+      .bram_ty_Dout_B  ( bram_ty_rd_data_b      ),
+      .bram_ty_Clk_B   (                        ),
+      .bram_ty_Rst_B   (                        ),
+      // bram_vs_a
+      .bram_vs_a_Addr_A ( uov_bram_vs_wr_addr_a ),
+      .bram_vs_a_EN_A   ( uov_bram_vs_en_a      ),
+      .bram_vs_a_WEN_A  ( uov_bram_vs_wen16_a   ),
+      .bram_vs_a_Din_A  ( uov_bram_vs_wr_data_a ),
+      .bram_vs_a_Dout_A ( bram_vs_rd_data_a     ),
+      .bram_vs_a_Clk_A  (                       ),
+      .bram_vs_a_Rst_A  (                       ),
+      .bram_vs_a_Addr_B ( uov_bram_vs_rd_addr_a ),
+      .bram_vs_a_EN_B   ( uov_bram_vs_en_b      ),
+      .bram_vs_a_WEN_B  (                       ),
+      .bram_vs_a_Din_B  (                       ),
+      .bram_vs_a_Dout_B ( bram_vs_rd_data_a     ),
+      .bram_vs_a_Clk_B  (                       ),
+      .bram_vs_a_Rst_B  (                       ),
+      // bram_vs_b
+      .bram_vs_b_Addr_A (                       ),
+      .bram_vs_b_EN_A   (                       ),
+      .bram_vs_b_WEN_A  (                       ),
+      .bram_vs_b_Din_A  (                       ),
+      .bram_vs_b_Dout_A ( '0                    ),
+      .bram_vs_b_Clk_A  (                       ),
+      .bram_vs_b_Rst_A  (                       ),
+      .bram_vs_b_Addr_B ( uov_bram_vs_rd_addr_b ),
+      .bram_vs_b_EN_B   (                       ),
+      .bram_vs_b_WEN_B  (                       ),
+      .bram_vs_b_Din_B  (                       ),
+      .bram_vs_b_Dout_B ( bram_vs_rd_data_b     ),
+      .bram_vs_b_Clk_B  (                       ),
+      .bram_vs_b_Rst_B  (                       ),
+      //streaming port for p3
+      .p3key_TDATA      ( axis_p3key_tdata      ),
+      .p3key_TVALID     ( axis_p3key_tvalid     ),
+      .p3key_TREADY     ( axis_p3key_tready     )
+  );
+
+
+
+  // external reads:
+  assign ext_rd_data = (ext_bram_sel == BRAM_O_SEL)  ? bram_O_rd_data   :
+                      //  (ext_bram_sel == BRAM_LR_SEL) ? bram_LR_rd_data_b: // uncomment for debug functionality
+                      //  (ext_bram_sel == BRAM_T_SEL)  ? bram_T_rd_data   : // uncomment for debug functionality
+                       (ext_bram_sel == BRAM_ty_SEL) ? bram_ty_rd_data_b :
+                                                       bram_vs_rd_data_a;
+
+endmodule

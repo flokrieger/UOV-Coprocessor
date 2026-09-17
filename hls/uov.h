@@ -36,11 +36,11 @@
 #define UOV_SALT_BYTES (128 / 8)
 
 // Internal enumeration of security levels in UOV
-#define UOV_LVL_TOY (0)
 #define UOV_LVL_Ip  (1)
 #define UOV_LVL_Is  (2)
 #define UOV_LVL_III (3)
 #define UOV_LVL_V   (5)
+#define UOV_LVL_TOY (7)
 
 // Implementation-specific:
 #define AES_BITS (128) // Bits per AES-128-CTR output
@@ -105,5 +105,5 @@ void uov(uint16_t msg_len_bytes,             // message length in bytes
          word_t bram_ty[BRAM_ty_DEPTH],      // external BRAM interface for t and y vectors
          word_t bram_vs_a[BRAM_vs_DEPTH],    // external BRAM interface (true dual port) for v and vectors
          word_t bram_vs_b[BRAM_vs_DEPTH],    // external BRAM interface (true dual port) for v and vectors
-         hls::stream<word_t> &data_in,       // streaming input for public key P3
+         hls::stream<word_t> &p3key,         // streaming input for public key P3
          volatile bit_t *trigger_uov);       // trigger signal for TVLA
