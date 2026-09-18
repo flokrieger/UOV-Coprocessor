@@ -9,7 +9,7 @@ from tqdm import tqdm
 from myCW305interface import *
 
 
-bitstream_file = "../bit/uov_cw_reference.bit"
+bitstream_file = "../results/uov_cw_reference.bit"
 target, scope  = initCW(bitstream_file, use_scope=True)
 
 #############################################
@@ -117,7 +117,7 @@ def runTraceCollection(checkpoints, rng_en, sec_lvl):
       n_pairs = trace_count // 2
 
       name = ("tvla_rngOn_" if rng_en else "tvla_rngOff_") + str(n_pairs) + "_" + ts
-      np.savez("./data/" + name + ".npz",
+      np.savez("../results/" + name + ".npz",
                t_values=np.asarray(t_values),
                avg_trace=np.asarray(avg_trace))
 
@@ -130,7 +130,7 @@ def runTraceCollection(checkpoints, rng_en, sec_lvl):
       ax2.plot([5.3]*len(t_values), 'r-')
       ax2.plot([-5.3]*len(t_values), 'r-')
       ax2.set_ylabel("t-values")
-      plt.savefig("./data/" + name + ".png")
+      plt.savefig("../results/" + name + ".png")
       plt.close()
       print(f"  -> snapshot at {num_traces} fixed + {trace_count - num_traces} random traces saved ({name})")
 

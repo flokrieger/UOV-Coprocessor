@@ -1,5 +1,4 @@
-cw/data
-cw/.venv
+.venv
 
 rtl/vitis_hls_export
 
@@ -13,4 +12,8 @@ uov_ref/data
 *.log
 *.jou
 *.str
+*.rpt
+*.npz
+*.pdf
+*.png
 __pycache__/
