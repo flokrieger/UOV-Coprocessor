@@ -108,7 +108,7 @@ The artifact is fully automated. You only need to `cd` into the repository's roo
 
 This script performs the following steps automatically. Alternatively, you can run the steps individually by manually executing each command in `runArtifact.sh`:
 
-1) Creates a virtual environment (`.venv/)` with the required Python libraries
+1) Creates a virtual environment (`.venv/`) with the required Python libraries
 2) Runs the Python/Sage UOV implementation in `uov_ref/uov.py` and checks the correctness against KAT tests in `uov_ref/kat/`. Then, the script prepares test vector files for the HLS, RTL, and FPGA tests in `uov_ref/data/`.
 3) Runs VitisHLS to compile the C++ HLS code in `hls/` into RTL code, stored into `rtl/vitis_hls_export/`. In addition, VitisHLS performs C Simulation and post-synthesis Co-Simulation using the test vectors generated in step 2.
 4) Runs Vivado Behavioural simulation of `rtl/uov_wrapper_tb.sv`, Synthesis, and Implementation for the CW305-A100 board. Generated bitstream and reports are exported to `results/`
