@@ -1,6 +1,13 @@
+#####################################################################
+# Part of the UOV-Coprocessor artifact:
+# https://github.com/flokrieger/UOV-Coprocessor
+#####################################################################
+#
 # Low-level interface to the ChipWhisperer CW305 target board. Provides the
 # board and scope setup, the register and BRAM access functions, and the helpers
 # that load the reference test vectors from uov_ref/data.
+#
+#####################################################################
 
 import chipwhisperer as cw
 from random import randint

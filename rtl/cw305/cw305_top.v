@@ -1,3 +1,8 @@
+/////////////////////////////////////////////////////////////////////
+// Part of the UOV-Coprocessor artifact:
+// https://github.com/flokrieger/UOV-Coprocessor
+/////////////////////////////////////////////////////////////////////
+
 /* 
 ChipWhisperer Artix Target - Example of connections between example registers
 and rest of system.

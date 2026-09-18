@@ -1,8 +1,21 @@
 #!/bin/bash
 
+#####################################################################
+# UOV-Coprocessor - 2026
+# Lightweight UOV Co-processor with Oil Space Blinding
+# Florian Krieger, Maciej Czuprynko, Sujoy Sinha Roy
+# Graz University of Technology
+# Contact: florian.krieger (at) tugraz.at
+# URL: https://github.com/flokrieger/UOV-Coprocessor
+#
+# Licensed under the MIT License.
+#####################################################################
+#
 # This is the main script to execute this artifact. Before running,
 # please set up the required software and hardware as described
-# in README.md 
+# in README.md
+#
+#####################################################################
 
 set -eo pipefail
 

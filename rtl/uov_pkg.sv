@@ -1,5 +1,18 @@
+/////////////////////////////////////////////////////////////////////
+// UOV-Coprocessor - 2026
+// Lightweight UOV Co-processor with Oil Space Blinding
+// Florian Krieger, Maciej Czuprynko, Sujoy Sinha Roy
+// Graz University of Technology
+// Contact: florian.krieger (at) tugraz.at
+// URL: https://github.com/flokrieger/UOV-Coprocessor
+//
+// Licensed under the MIT License.
+/////////////////////////////////////////////////////////////////////
+//
 // Package holding the parameters for the UOV co-processor.
 // These values must match the definitions in the HLS code.
+//
+/////////////////////////////////////////////////////////////////////
 
 package uov_pkg;
 

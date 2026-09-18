@@ -1,3 +1,14 @@
+#####################################################################
+# UOV-Coprocessor - 2026
+# Lightweight UOV Co-processor with Oil Space Blinding
+# Florian Krieger, Maciej Czuprynko, Sujoy Sinha Roy
+# Graz University of Technology
+# Contact: florian.krieger (at) tugraz.at
+# URL: https://github.com/flokrieger/UOV-Coprocessor
+#
+# Licensed under the MIT License.
+#####################################################################
+#
 # Host script running the tests and the TVLA trace collection on the
 # ChipWhisperer CW305 board. Flashes the FPGA, checks the signing results
 # against the reference data in uov_ref/data/, and captures power traces for a
@@ -5,6 +16,8 @@
 # are written to ../results.
 #
 # Execute via: python3 mainCW305.py  (from within the cw/ folder and with active venv)
+#
+#####################################################################
 
 import chipwhisperer as cw
 from random import randint, seed, randbytes

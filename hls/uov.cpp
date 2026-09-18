@@ -1,9 +1,22 @@
-// Top level of the UOV co-processor HLS code. Contains the control FSM, the 
-// matrix and hash subsystems, and the shared arithmetic datapath. This file 
-// and the included HLS code is compiled to RTL by Vitis HLS via 
+/////////////////////////////////////////////////////////////////////
+// UOV-Coprocessor - 2026
+// Lightweight UOV Co-processor with Oil Space Blinding
+// Florian Krieger, Maciej Czuprynko, Sujoy Sinha Roy
+// Graz University of Technology
+// Contact: florian.krieger (at) tugraz.at
+// URL: https://github.com/flokrieger/UOV-Coprocessor
+//
+// Licensed under the MIT License.
+/////////////////////////////////////////////////////////////////////
+//
+// Top level of the UOV co-processor HLS code. Contains the control FSM, the
+// matrix and hash subsystems, and the shared arithmetic datapath. This file
+// and the included HLS code is compiled to RTL by Vitis HLS via
 // vitis/run_vitis_hls.tcl.
 //
 // Execute via: vitis_hls -f run_vitis_hls.tcl (within the vitis/ folder)
+//
+/////////////////////////////////////////////////////////////////////
 
 #include "uov.h"
 #include "aes.h"

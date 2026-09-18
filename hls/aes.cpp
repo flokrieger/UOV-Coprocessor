@@ -1,15 +1,22 @@
 /////////////////////////////////////////////////////////////////////
+// Part of the UOV-Coprocessor artifact:
+// https://github.com/flokrieger/UOV-Coprocessor
+/////////////////////////////////////////////////////////////////////
+//
 // Derived from the UOV reference implementation (pqov):
 // URL: https://github.com/pqov/pqov
 // The AES-128-CTR based expansion of the public key follows pqov; the
 // AES-128 block cipher itself follows FIPS 197.
 //
 // SPDX-License-Identifier: CC0-1.0 OR Apache-2.0
+//
 /////////////////////////////////////////////////////////////////////
-
+//
 // AES-128 and AES-128-CTR implementation in HLS. Used to expand the
 // public key matrices P1 and P2 from the public key seed. Also used
 // to sample the blinding matrices.
+//
+/////////////////////////////////////////////////////////////////////
 
 #include "aes.h"
 #include "uov.h"

@@ -1,5 +1,14 @@
-`timescale 1ns / 1ps
-
+/////////////////////////////////////////////////////////////////////
+// UOV-Coprocessor - 2026
+// Lightweight UOV Co-processor with Oil Space Blinding
+// Florian Krieger, Maciej Czuprynko, Sujoy Sinha Roy
+// Graz University of Technology
+// Contact: florian.krieger (at) tugraz.at
+// URL: https://github.com/flokrieger/UOV-Coprocessor
+//
+// Licensed under the MIT License.
+/////////////////////////////////////////////////////////////////////
+//
 // AXI4-Lite slave implementing the Vitis kernel control register map.
 // The control register map (CTRL, GIER, IP_IER, IP_ISR) follows AMD/Xilinx 
 // RTL kernel requirements here:
@@ -53,6 +62,9 @@
 //   0x78  stream_tdata[ 95:64]  bits 31:0             RW
 //   0x7C  stream_tdata[127:96]  bits 31:0             RW
 //   0x80  bram_rw_addr[31:0]    bits 31:0             RW
+/////////////////////////////////////////////////////////////////////
+
+`timescale 1ns / 1ps
 
 module axil_control #(
     parameter int ADDR_WIDTH = 12,

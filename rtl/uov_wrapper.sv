@@ -1,8 +1,21 @@
+/////////////////////////////////////////////////////////////////////
+// UOV-Coprocessor - 2026
+// Lightweight UOV Co-processor with Oil Space Blinding
+// Florian Krieger, Maciej Czuprynko, Sujoy Sinha Roy
+// Graz University of Technology
+// Contact: florian.krieger (at) tugraz.at
+// URL: https://github.com/flokrieger/UOV-Coprocessor
+//
+// Licensed under the MIT License.
+/////////////////////////////////////////////////////////////////////
+//
 // RTL Wrapper around the HLS UOV core. The HLS core does not instantiate the
 // BRAM memories due to some HLS-specific limitations. Thus, the BRAMs are
-// instantiated here in RTL. This also exposes an external read/write port 
-// for the host interface. The security level is selected at runtime through 
+// instantiated here in RTL. This also exposes an external read/write port
+// for the host interface. The security level is selected at runtime through
 // the configuration inputs.
+//
+/////////////////////////////////////////////////////////////////////
 
 module UovWrapper 
 import uov_pkg::*;

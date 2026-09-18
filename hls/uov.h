@@ -1,5 +1,18 @@
+/////////////////////////////////////////////////////////////////////
+// UOV-Coprocessor - 2026
+// Lightweight UOV Co-processor with Oil Space Blinding
+// Florian Krieger, Maciej Czuprynko, Sujoy Sinha Roy
+// Graz University of Technology
+// Contact: florian.krieger (at) tugraz.at
+// URL: https://github.com/flokrieger/UOV-Coprocessor
+//
+// Licensed under the MIT License.
+/////////////////////////////////////////////////////////////////////
+//
 // Common parameters, data types and function declarations shared across HLS
 // sources of the UOV co-processor.
+//
+/////////////////////////////////////////////////////////////////////
 
 #pragma once
 #include "field.h"

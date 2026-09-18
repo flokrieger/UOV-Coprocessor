@@ -1,9 +1,22 @@
+#####################################################################
+# UOV-Coprocessor - 2026
+# Lightweight UOV Co-processor with Oil Space Blinding
+# Florian Krieger, Maciej Czuprynko, Sujoy Sinha Roy
+# Graz University of Technology
+# Contact: florian.krieger (at) tugraz.at
+# URL: https://github.com/flokrieger/UOV-Coprocessor
+#
+# Licensed under the MIT License.
+#####################################################################
+#
 # Collects the output products of the artifact run into a single PDF report.
-# Parses the sign and verify latencies from results/vivado.log, the area and 
-# timing results from results/utilization.rpt and results/timing.rpt, and 
+# Parses the sign and verify latencies from results/vivado.log, the area and
+# timing results from results/utilization.rpt and results/timing.rpt, and
 # plots the TVLA results from the trace files in results/.
 #
 # Execute via: python3 makeReport.py  (within the results/ folder and with active venv)
+#
+#####################################################################
 
 import glob
 import os

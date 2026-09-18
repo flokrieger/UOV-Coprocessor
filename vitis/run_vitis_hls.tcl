@@ -1,7 +1,20 @@
+#####################################################################
+# UOV-Coprocessor - 2026
+# Lightweight UOV Co-processor with Oil Space Blinding
+# Florian Krieger, Maciej Czuprynko, Sujoy Sinha Roy
+# Graz University of Technology
+# Contact: florian.krieger (at) tugraz.at
+# URL: https://github.com/flokrieger/UOV-Coprocessor
+#
+# Licensed under the MIT License.
+#####################################################################
+#
 # Vitis HLS Synthesis
 # Generates RTL from C++ for the ChipWhisperer cw308 Artix-7 100T board
-# 
+#
 # Execute via: vitis_hls -f run_vitis_hls.tcl
+#
+#####################################################################
 
 set project "vitis_hls_uov"
 set function "uov"

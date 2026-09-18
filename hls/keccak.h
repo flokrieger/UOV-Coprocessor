@@ -1,4 +1,8 @@
 /////////////////////////////////////////////////////////////////////
+// Part of the UOV-Coprocessor artifact:
+// https://github.com/flokrieger/UOV-Coprocessor
+/////////////////////////////////////////////////////////////////////
+//
 // Derived from the UOV reference implementation (pqov):
 // URL: https://github.com/pqov/pqov
 // See utils/fips202.c for the original SHAKE-256 implementation, which is
@@ -8,10 +12,13 @@
 // Peter Schwabe.
 //
 // SPDX-License-Identifier: CC0-1.0 OR Apache-2.0
+//
 /////////////////////////////////////////////////////////////////////
-
+//
 // SHAKE-256 based on the Keccak-f[1600] permutation. Used for hashing
 // and for sampling vinegar vectors.
+//
+/////////////////////////////////////////////////////////////////////
 
 #pragma once
 #include "uov.h"

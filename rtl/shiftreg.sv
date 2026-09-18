@@ -1,4 +1,8 @@
 /////////////////////////////////////////////////////////////////////
+// Part of the UOV-Coprocessor artifact:
+// https://github.com/flokrieger/UOV-Coprocessor
+/////////////////////////////////////////////////////////////////////
+//
 // Derived from the OpenNTT project:
 // OpenNTT - 2024
 // Florian Krieger, Florian Hirner, Ahmet Can Mert, Sujoy Sinha Roy
@@ -6,11 +10,13 @@
 // URL: https://github.com/flokrieger/OpenNTT
 //
 // Licensed under the MIT License.
+//
 /////////////////////////////////////////////////////////////////////
-
-
+//
 // shift register with a variable number of registers
 // see https://docs.xilinx.com/r/en-US/ug901-vivado-synthesis/Shift-Registers
+//
+/////////////////////////////////////////////////////////////////////
 
 `default_nettype wire
 

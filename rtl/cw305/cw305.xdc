@@ -1,3 +1,8 @@
+#####################################################################
+# Part of the UOV-Coprocessor artifact:
+# https://github.com/flokrieger/UOV-Coprocessor
+#####################################################################
+#
 # ChipWhisperer Artix Target - Pin constraints for the CW305 board.
 #
 # Copyright (c) 2016-2020, NewAE Technology Inc.
@@ -22,10 +27,17 @@
 # The views and conclusions contained in the software and documentation are those
 # of the authors and should not be interpreted as representing official policies,
 # either expressed or implied, of NewAE Technology Inc.
+#
+#####################################################################
+#
+# ####### HARDWARE ON BOARD
+#
+#####################################################################
+#
+# LEDs
+#
+#####################################################################
 
-######## HARDWARE ON BOARD
-
-#LEDs
 set_property DRIVE 8 [get_ports led1]
 set_property PACKAGE_PIN T2 [get_ports led1]
 
