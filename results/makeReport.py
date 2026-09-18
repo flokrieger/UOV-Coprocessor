@@ -51,11 +51,11 @@ def readFile(name):
 
 def getLatencies(log):
   sign = {}
-  for lvl, mode, cyc in re.findall(r"uov_wrapper_tb\[(\S+)\]: (\S+) uov sign execution took (\d+) clock cycles", log):
+  for lvl, mode, cyc in re.findall(r"uov_wrapper_tb\[(\S+)\]:\s+(\S+)\s+uov sign execution took\s+(\d+) clock cycles", log):
     if lvl not in SKIP_LEVELS:
       sign.setdefault(lvl, {})[mode] = cyc
   verif = []
-  for lvl, inv, cyc in re.findall(r"uov_wrapper_tb\[(\S+)\]: uov verif \(invalid=(\d+)\) took (\d+) clock cycles", log):
+  for lvl, inv, cyc in re.findall(r"uov_wrapper_tb\[(\S+)\]:\s+uov verif \(invalid=(\d+)\) took\s+(\d+) clock cycles", log):
     if lvl not in SKIP_LEVELS:
       verif.append(("%s (%s signature)" % (lvl, "valid" if inv == "0" else "invalid"), cyc))
   return sign, verif
@@ -253,7 +253,7 @@ if __name__ == "__main__":
 
   lines += ["----------------------------------------------------------------------------------------------", "Post-implementation utilization of UOV core. This maps to Table 5 ('Total' row) in the paper.", "Note: due to run variations, the reported utilization might slightly differ from the paper.", "----------------------------------------------------------------------------------------------"]
   if util:
-    lines.append("  %-18s %10s %12s %8s" % ("site type", "used", "available", "util%"))
+    lines.append("  %-18s %10s %12s %8s" % ("resource", "used", "available", "util%"))
     for name, used, avail, pct in util:
       lines.append("  %-18s %10s %12s %8s" % (name, used, avail, pct))
   else:

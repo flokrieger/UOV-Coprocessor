@@ -48,8 +48,8 @@ To prepare your setup, please follow these steps:
 
 **Step 1:** Install the required software if it is missing on your system:
 ```
-curl -LsSf https://astral.sh/uv/install.sh | sh
 sudo apt install git curl unzip libusb-1.0-0
+curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
 **Step 2:** By default, accessing the USB devices (CW305 and Husky) requires root permission. To use them as a regular user, install NewAE's udev rules and add your user to the required groups (see the [ChipWhisperer Linux installation guide](https://chipwhisperer.readthedocs.io/en/latest/linux-install.html)):
@@ -74,7 +74,11 @@ git clone https://github.com/flokrieger/UOV-Coprocessor.git
 **Step 4:** Connect the CW305 target board with the Husky and the host machine as shown here:
 TODO
 
-**Step 5:** Make sure Vivado and VitisHLS are in $PATH. When executing these commands:
+**Step 5:** Make sure Vivado and VitisHLS are in `$PATH`. If they are not, source the Vivado settings script (adapt the path to your installation). This also adds VitisHLS to `$PATH`:
+```
+source /tools/Xilinx/Vivado/2022.2/settings64.sh
+```
+To verify, execute these commands:
 ```
 vivado -version
 vitis_hls -version

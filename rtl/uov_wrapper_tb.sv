@@ -289,6 +289,7 @@ module uov_wrapper_tb();
 
   // Reads the BRAM_O content (i.e. Ob) from the BRAM and checks the correctness against the reference file
   task automatic check_bram_O(input logic [2:0] sec_lvl, input logic enable_blinding);
+    string ref_name;
     field_t Ob_ref    [0:UOV_LVL_V_N-1][0:UOV_LVL_V_M-1];
     word_t  bram_O_rd [0:BRAM_O_DEPTH-1];
     int fd;
@@ -342,8 +343,10 @@ module uov_wrapper_tb();
       end
     end
 
-    if (mismatches == 0) $display("uov_wrapper_tb[%s]: O matches %s [OK]", lvl_suffix(sec_lvl), enable_blinding ? "Ob_ref" : "O_ref");
-    else begin $display("uov_wrapper_tb[%s]: O has %0d mismatches against %s [FAIL]", lvl_suffix(sec_lvl), mismatches, enable_blinding ? "Ob_ref" : "O_ref"); errors++; end
+    if (enable_blinding) ref_name = "Ob_ref";
+    else                 ref_name = "O_ref";
+    if (mismatches == 0) $display("uov_wrapper_tb[%s]: O matches %s [OK]", lvl_suffix(sec_lvl), ref_name);
+    else begin $display("uov_wrapper_tb[%s]: O has %0d mismatches against %s [FAIL]", lvl_suffix(sec_lvl), mismatches, ref_name); errors++; end
   endtask
 
   
@@ -503,6 +506,7 @@ module uov_wrapper_tb();
   // Executes UOV signing for the specified security level
   task automatic run_uov_sign(input logic [2:0] sec_lvl, input logic enable_blinding);
     int unsigned cycle_count;
+    string mode;
     do_verif = 1'b0;
     do_blinding = enable_blinding;
 
@@ -530,7 +534,9 @@ module uov_wrapper_tb();
       cycle_count++;
       if (done == 1'd1) break;
     end
-    $display("uov_wrapper_tb[%s]: %s uov sign execution took %0d clock cycles", lvl_suffix(sec_lvl), enable_blinding ? "blinded" : "unblinded", cycle_count);
+    if (enable_blinding) mode = "blinded";
+    else                 mode = "unblinded";
+    $display("uov_wrapper_tb[%s]: %s uov sign execution took %0d clock cycles", lvl_suffix(sec_lvl), mode, cycle_count);
 
     #31;
     rst = 1'd1;
