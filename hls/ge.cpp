@@ -16,6 +16,10 @@
 
 #include "ge.h"
 
+// Each call of this function is one pipelined step
+// of the Echelon Form computation. The current state
+// is passed from outside and operations are done
+// according to the state.
 void ef_datapath(const ge_state_t state,
                  const addr_t pivot_row_idx,
                  const addr_t slice_idx,
@@ -282,6 +286,8 @@ void ef_datapath(const ge_state_t state,
   *singular_out = singular;
 }
 
+// Computes Echelon Form of the augmented system matrix
+// stored in bram_LR, bram_ty, and bram_T (mirror)
 void ef(const addr_t uov_m,
         word_t bram_LR[BRAM_LR_DEPTH],
         word_t bram_T[BRAM_T_DEPTH],
@@ -413,6 +419,10 @@ void ef(const addr_t uov_m,
   }
 }
 
+// Each call of this function is one pipelined step
+// of the Back Substitution computation. The current state
+// is passed from outside and operations are done
+// according to the state.
 void bs_datapath(const addr_t slice_idx,
                  const addr_t row_idx,
                  const addr_t uov_m,
@@ -476,6 +486,8 @@ void bs_datapath(const addr_t slice_idx,
     bram_T[BRAM_T_y_OFFSET + bram_ty_wr_addr] = O;
 }
 
+// Computes Back Substitution of the augmented system matrix
+// stored in bram_LR, bram_ty, and bram_T (mirror)
 void bs(const addr_t uov_m,
         word_t bram_LR[BRAM_LR_DEPTH],
         word_t bram_T[BRAM_T_DEPTH],
@@ -512,6 +524,9 @@ void bs(const addr_t uov_m,
   }
 }
 
+// Computes the whole Gaussian Elimination (ef + bs).
+// Returns a singular flag after ef if the system is not
+// solvable.
 void geSubsystem(const addr_t uov_m,
                  word_t bram_LR[BRAM_LR_DEPTH],
                  word_t bram_T[BRAM_T_DEPTH],

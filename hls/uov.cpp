@@ -24,6 +24,7 @@
 #include "keccak.h"
 #include "hls_stream.h"
 
+// Compact datapath module as used in GE
 void datapath(field_t A, field_t B, word_t C, word_t INIT, uint8_t init_en, word_t *O) {
   #pragma HLS INLINE off
   
@@ -53,6 +54,7 @@ void datapath(field_t A, field_t B, word_t C, word_t INIT, uint8_t init_en, word
   fieldsToWord(out_fld, O);
 }
 
+// Multiplication layer of the datapath as used in matrixSubsystem
 word_t datapath_mul(field_t A, field_t B, word_t C) {
   #pragma HLS INLINE off
   #pragma HLS PIPELINE II = 1
@@ -74,6 +76,7 @@ word_t datapath_mul(field_t A, field_t B, word_t C) {
   return prod;
 }
 
+// Accumulation layer of the datapath as used in matrixSubsystem
 word_t datapath_acc(word_t prod, word_t INIT, bit_t init_en, acc_sel_t acc_sel, word_t acc[ACC_REG_DEPTH]) {
   #pragma HLS INLINE
   #pragma HLS ARRAY_PARTITION variable = acc complete dim = 1
@@ -85,6 +88,7 @@ word_t datapath_acc(word_t prod, word_t INIT, bit_t init_en, acc_sel_t acc_sel, 
   return out;
 }
 
+// Converts an array of field_t into a word_t
 void fieldsToWord(field_t in[W_FE], word_t *out) {
   #pragma HLS INLINE
   int i;
@@ -96,6 +100,7 @@ void fieldsToWord(field_t in[W_FE], word_t *out) {
   *out = w;
 }
 
+// Converts a word_t into an array of field_t
 void wordToFields(word_t in, field_t out[W_FE]) {
   #pragma HLS INLINE
   int i;
@@ -105,20 +110,16 @@ void wordToFields(word_t in, field_t out[W_FE]) {
   }
 }
 
-void wordTouint8(word_t in, uint8_t out[AES_BITS / 8]) {
-  #pragma HLS INLINE
-  int i;
-  for (i = 0; i < AES_BITS / 8; i++) {
-    #pragma HLS UNROLL
-    out[i] = in.range(8 * i + 7, 8 * i);
-  }
-}
-
+// Selects the i-th field_t element within in and returns it in out
 void wordToFieldElement(word_t in, uint8_t i, field_t *out) {
   #pragma HLS INLINE
   *out = in.range(FE_BITS * i + FE_BITS - 1, FE_BITS * i);
 }
 
+// Each call of this function is one pipelined step
+// of the matrix computations. The current state
+// is passed from outside and operations are done
+// according to the state.
 void matrixCore(
     const op_t operation,
     const ap_uint<3> slice_idx,
@@ -457,6 +458,8 @@ void matrixCore(
     bram_T[bram_T_wr_addr] = wr_data;
 }
 
+// Performs the matrix computations of signing and verification by driving
+// matrixCore via the current state
 void matrixSubsystem(
     bit_t do_Ox,
     bit_t do_verif,
@@ -619,6 +622,8 @@ void matrixSubsystem(
   }
 }
 
+// Hashes the message and salt into the target vector t (op = 0), or samples
+// the vinegar vector v from the secret key seed (op = 1).
 void hashSubsystem(const bit_t op,
                    const addr_t uov_m,
                    const addr_t uov_v,
@@ -634,6 +639,9 @@ void hashSubsystem(const bit_t op,
   shake256(op, bram_ty + BRAM_ty_DEPTH / 2, bram_vs_a, hash_output_bytes, bram_vs_a + BRAM_ty_DEPTH / 2, hash_input_bytes);
 }
 
+// Top level of the UOV co-processor. Runs UOV signing or verification for the
+// security level given by the runtime parameters. The BRAM memories are not
+// part of this HLS IP module and must be instantiated outside of the IP. 
 void uov(uint16_t msg_len_bytes,
          addr_t uov_m,
          addr_t uov_v,

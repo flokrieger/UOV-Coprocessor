@@ -102,6 +102,7 @@ void KeccakRound(lane_t s[KECCAK_LANES], uint8_t round) {
   s[0] ^= KECCAK_RC[round];
 }
 
+// 24-round Keccak permutation:
 void KeccakF1600(lane_t s[KECCAK_LANES]) {
   #pragma HLS pipeline II = KECCAK_NROUNDS + 1
   #pragma HLS ARRAY_PARTITION variable = s complete dim = 1
@@ -115,6 +116,8 @@ void KeccakF1600(lane_t s[KECCAK_LANES]) {
   }
 }
 
+// Shake256 XOF implementation: absorbs data from in, and squeezes to out_a
+// and out_b.
 void shake256(bit_t target_output,
               word_t out_a[SHAKE_MEM_DEPTH],
               word_t out_b[SHAKE_MEM_DEPTH],

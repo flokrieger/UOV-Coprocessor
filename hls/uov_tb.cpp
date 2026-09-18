@@ -58,7 +58,7 @@ uint8_t seed_pk_ref[UOV_SEED_PK_BYTES];
 uint8_t seed_bl_ref[UOV_SEED_PK_BYTES];
 uint8_t hash_in[BRAM_ty_DEPTH / 2 * W_FE];
 
-// Loading from input and reference files:
+// Reads n hex values from path into the flat array arr
 static int load_flat(const char *path, field_t *arr, int n) {
   FILE *f = fopen(path, "r");
   int i;
@@ -79,6 +79,7 @@ static int load_flat(const char *path, field_t *arr, int n) {
   return 0;
 }
 
+// Reads up to maxn hex bytes from path and returns the number of bytes read
 static int load_bytes(const char *path, uint8_t *buf, int maxn) {
   FILE *f = fopen(path, "r");
   int n = 0;
@@ -93,6 +94,7 @@ static int load_bytes(const char *path, uint8_t *buf, int maxn) {
   return n;
 }
 
+// Reads 'index value' pairs from path into the vector arr
 int load_indexed_vec(const char *path, field_t *arr, int n) {
   FILE *f = fopen(path, "r");
   unsigned int idx, val;
@@ -108,6 +110,7 @@ int load_indexed_vec(const char *path, field_t *arr, int n) {
   return 0;
 }
 
+// Reads 'column row value' triples from path into a flat row-major matrix
 int load_matrix_T(const char *path, field_t *arr, int cols) {
   FILE *f = fopen(path, "r");
   unsigned int sage_col, sage_row, val;
@@ -122,6 +125,8 @@ int load_matrix_T(const char *path, field_t *arr, int cols) {
   return 0;
 }
 
+// Reads the P3 coefficients from path and writes them as words into the stream s
+// This is used in verification
 static int load_p3_stream(const char *path, hls::stream<word_t> &s) {
   FILE *f = fopen(path, "r");
   unsigned int slice_base, r, c, val;
@@ -150,6 +155,7 @@ static int load_p3_stream(const char *path, hls::stream<word_t> &s) {
   return count;
 }
 
+// Reads the 16-byte seed from path into dst
 static int load_seed_pk(const char *path, uint8_t *dst) {
   FILE *f = fopen(path, "r");
   int i;
@@ -170,6 +176,7 @@ static int load_seed_pk(const char *path, uint8_t *dst) {
   return 0;
 }
 
+// Writes n bytes from src into the word-packed memory mem, starting at base_word
 static void write_bytes(word_t *mem, uint32_t base_word, const uint8_t *src, int n) {
   for (int j = 0; j < n; j++) {
     uint32_t wi = base_word + (j >> 4);
@@ -180,6 +187,7 @@ static void write_bytes(word_t *mem, uint32_t base_word, const uint8_t *src, int
   }
 }
 
+// Reads the hash input (msg || salt || seed_sk) and derives the message length
 static int load_hash_input(const char *path, uint8_t *hash_in, int *msg_len_bytes) {
   memset(hash_in, 0, BRAM_ty_DEPTH / 2 * W_FE);
   int hash_in_len = load_bytes(path, hash_in, BRAM_ty_DEPTH / 2 * W_FE - 1);
@@ -198,6 +206,7 @@ static int load_hash_input(const char *path, uint8_t *hash_in, int *msg_len_byte
 }
 
 
+// Runs the signing test for the given security level and returns the number of errors
 static int test_uov_sign(const uov_level_t *L) {
   const char *lvl = L->name;
   const uint32_t uov_m = L->uov_m;
@@ -380,6 +389,7 @@ static int test_uov_sign(const uov_level_t *L) {
   return errors;
 }
 
+// Runs the verification test for the given security level and signature variant
 static int test_uov_verif(const uov_level_t *L, const int invalid) {
   const char *lvl = L->name;
   const uint32_t uov_m = L->uov_m;

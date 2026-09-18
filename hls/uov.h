@@ -93,16 +93,28 @@ typedef ap_uint<3> acc_sel_t;
 #define BRAM_T_L_OFFSET (512)
 #define BRAM_T_y_OFFSET (1024 + 128)
 
-// Function declarations
+
+// Compact datapath module as used in GE
 void datapath(field_t A, field_t B, word_t C, word_t INIT, uint8_t init_en, word_t *O);
 
+// Multiplication layer of the datapath as used in matrixSubsystem
 word_t datapath_mul(field_t A, field_t B, word_t C);
+
+// Accumulation layer of the datapath as used in matrixSubsystem
 word_t datapath_acc(word_t prod, word_t INIT, bit_t init_en, acc_sel_t acc_sel, word_t acc[ACC_REG_DEPTH]);
 
+// Converts an array of field_t into a word_t
 void fieldsToWord(field_t in[W_FE], word_t *out);
+
+// Converts a word_t into an array of field_t
 void wordToFields(word_t in, field_t out[W_FE]);
+
+// Selects the i-th field_t element within in and returns it in out
 void wordToFieldElement(word_t in, uint8_t i, field_t *out);
 
+// Top level of the UOV co-processor. Runs UOV signing or verification for the
+// security level given by the runtime parameters. The BRAM memories are not
+// part of this HLS IP module and must be instantiated outside of the IP.
 void uov(uint16_t msg_len_bytes,             // message length in bytes
          addr_t uov_m,                       // UOV runtime parameter config
          addr_t uov_v,                       // UOV runtime parameter config
