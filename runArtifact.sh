@@ -2,7 +2,6 @@
 set -eo pipefail
 
 # Set up the python environment used by all steps below
-curl -LsSf https://astral.sh/uv/install.sh | sh
 ~/.local/bin/uv venv --python 3.12
 ~/.local/bin/uv pip install -r requirements.txt
 source .venv/bin/activate
