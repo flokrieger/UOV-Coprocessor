@@ -8,7 +8,9 @@ from datetime import datetime
 from tqdm import tqdm
 from interfaceCW305 import *
 
-
+NUM_TRACES_RNG_ON = 10**5
+NUM_TRACES_RNG_OFF = 500
+FIXED_MESSAGE = False # True: fixed message and salt, False: random message and salt
 bitstream_file = "../results/uov_cw_reference.bit"
 target, scope  = initCW(bitstream_file, use_scope=True)
 
@@ -83,7 +85,6 @@ else:
 #############################################
 
 CHUNK_TRACES  = 500   # traces buffered before each fit_u
-FIXED_MESSAGE = False # True: fixed message and salt, False: random message and salt
 
 def runTraceCollection(checkpoints, rng_en, sec_lvl):
   checkpoint_set = set(checkpoints)
@@ -210,8 +211,8 @@ def runTraceCollection(checkpoints, rng_en, sec_lvl):
   print("Traces collected!")
 
 
-runTraceCollection([10**3,10**4,10**5], rng_en=True,  sec_lvl=UOV_LVL_TOY)
-runTraceCollection([500,10**3,10**4],   rng_en=False, sec_lvl=UOV_LVL_TOY)
+runTraceCollection([NUM_TRACES_RNG_ON],  rng_en=True,  sec_lvl=UOV_LVL_TOY)
+runTraceCollection([NUM_TRACES_RNG_OFF], rng_en=False, sec_lvl=UOV_LVL_TOY)
 
 scope.dis()
 target.dis()

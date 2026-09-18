@@ -12,6 +12,8 @@ from matplotlib.ticker import FuncFormatter
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RESULTS_DIR = os.path.join(ROOT, "results")
 TVLA_THRESHOLD = 5.3
+TARGET_CLOCK = "pll_clk1"
+SKIP_LEVELS = ["uov-toy"]
 UTIL_ROWS = ["Slice LUTs", "Slice Registers", "Block RAM Tile", "DSPs"]
 TIMING_KEYS = ["WNS(ns)", "TNS(ns)", "TNS failing endpoints", "TNS total endpoints",
                "WHS(ns)", "THS(ns)", "THS failing endpoints", "THS total endpoints"]
@@ -48,12 +50,15 @@ def readFile(name):
 
 
 def getLatencies(log):
-  rows = []
-  for lvl, cyc in re.findall(r"uov_wrapper_tb\[(\S+)\]: uov sign execution took (\d+) clock cycles", log):
-    rows.append(("sign  " + lvl, cyc))
+  sign = {}
+  for lvl, mode, cyc in re.findall(r"uov_wrapper_tb\[(\S+)\]: (\S+) uov sign execution took (\d+) clock cycles", log):
+    if lvl not in SKIP_LEVELS:
+      sign.setdefault(lvl, {})[mode] = cyc
+  verif = []
   for lvl, inv, cyc in re.findall(r"uov_wrapper_tb\[(\S+)\]: uov verif \(invalid=(\d+)\) took (\d+) clock cycles", log):
-    rows.append(("verif %s (%s signature)" % (lvl, "valid" if inv == "0" else "invalid"), cyc))
-  return rows
+    if lvl not in SKIP_LEVELS:
+      verif.append(("%s (%s signature)" % (lvl, "valid" if inv == "0" else "invalid"), cyc))
+  return sign, verif
 
 
 def getUtilization(rpt):
@@ -65,11 +70,18 @@ def getUtilization(rpt):
   return rows
 
 
+def getTargetFrequency(rpt):
+  m = re.search(r"^" + re.escape(TARGET_CLOCK) + r"\s+\{[^}]*\}\s+([\d.]+)\s+([\d.]+)\s*$", rpt, re.M)
+  if not m:
+    return []
+  return [("Target frequency (MHz)", m.group(2)), ("Target period (ns)", m.group(1))]
+
+
 def getTiming(rpt):
   m = re.search(r"^\s*WNS\(ns\).*\n\s*-+.*\n\s*(.+)$", rpt, re.M)
   if not m:
     return []
-  return list(zip(TIMING_KEYS, m.group(1).split()))
+  return [(k, v) for k, v in zip(TIMING_KEYS, m.group(1).split()) if "endpoints" not in k]
 
 
 def loadTvla():
@@ -196,7 +208,7 @@ def tvlaFigure(pdf, runs):
   fw = 1.0 + pw * len(runs) + 1.5 * (len(runs) - 1) + 1.1
   fh = ph + 1.5
   fig = plt.figure(figsize=(fw, fh))
-  fig.suptitle("TVLA", fontsize=12,
+  fig.suptitle("TVLA (Figure 4 in the paper)", fontsize=12,
                weight="bold", y=1 - 0.4 / fh)
   for i, run in enumerate(runs):
     x0 = (1.0 + i * (pw + 1.5)) / fw
@@ -209,7 +221,8 @@ if __name__ == "__main__":
   hls_log = readFile("vitis_hls.log")
   vivado_log = readFile("vivado.log")
   util = getUtilization(readFile("utilization.rpt"))
-  timing = getTiming(readFile("timing.rpt"))
+  timing_rpt = readFile("timing.rpt")
+  timing = getTargetFrequency(timing_rpt) + getTiming(timing_rpt)
   tvla = loadTvla()
 
   lines = [""]
@@ -220,18 +233,25 @@ if __name__ == "__main__":
   lines.append("  Implementation   : %s" % ("passed" if "STATUS: Bitstream written" in vivado_log else "MISSING/FAILED"))
   lines.append("")
 
-  lines += ["Simulated latency (clock cycles)", "-------------------------------"]
-  latencies = getLatencies(vivado_log)
-  if latencies:
-    width = max(len(label) for label, _ in latencies)
-    for label, cyc in latencies:
-      lines.append("  %-*s %10s" % (width, label, cyc))
+  lines += ["----------------------------------------------------------------------------------------------", "Simulated latency (clock cycles). This maps to Table 4 in the paper.", "----------------------------------------------------------------------------------------------"]
+  sign, verif = getLatencies(vivado_log)
+  if sign or verif:
+    width = max([len(l) for l in sign] + [len(l) for l, _ in verif] + [12])
+    if sign:
+      lines.append("  %-*s %12s %12s" % (width, "signing", "plain", "blinded"))
+      for lvl, cycles in sign.items():
+        lines.append("  %-*s %12s %12s" % (width, lvl, cycles.get("unblinded", "-"),
+                                           cycles.get("blinded", "-")))
+    if verif:
+      lines.append("")
+      lines.append("  %-*s %12s" % (width, "verification", "cycles"))
+      for label, cyc in verif:
+        lines.append("  %-*s %12s" % (width, label, cyc))
   else:
     lines.append("  no latency information in results/vivado.log")
   lines.append("")
 
-  lines += ["Post-implementation utilization (uov_wrapper_inst)",
-            "--------------------------------------------------"]
+  lines += ["----------------------------------------------------------------------------------------------", "Post-implementation utilization of UOV core. This maps to Table 5 ('Total' row) in the paper.", "Note: due to run variations, the reported utilization might slightly differ from the paper.", "----------------------------------------------------------------------------------------------"]
   if util:
     lines.append("  %-18s %10s %12s %8s" % ("site type", "used", "available", "util%"))
     for name, used, avail, pct in util:
@@ -240,7 +260,7 @@ if __name__ == "__main__":
     lines.append("  results/utilization.rpt missing")
   lines.append("")
 
-  lines += ["Post-route timing", "-----------------"]
+  lines += ["----------------------------------------------------------------------------------------------", "Post-route timing", "----------------------------------------------------------------------------------------------"]
   if timing:
     for key, val in timing:
       lines.append("  %-24s %12s" % (key, val))

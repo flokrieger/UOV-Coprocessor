@@ -22,8 +22,7 @@ printf '%s\n\n' "===== Done Vitis HLS ====="
 
 # Run Vivado to simulate, synthesize and implement the design
 # for the ChipWhisperer 305 FPGA board. This also exports the
-# bitstream to results/ and the utilization and timing reports to
-# results/
+# bitstream to results/ and the utilization and timing reports to results/
 printf '%s\n\n' "===== Run Vivado ====="
 vivado -mode batch -source run_vivado_cw.tcl 2>&1 | tee ../results/vivado.log
 printf '%s\n\n' "===== Done Vivado ====="
