@@ -21,6 +21,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+# SageMath-based reference implementation of UOV. This script generates the
+# input and reference test vectors for the HLS, RTL, and FPGA tests, and checks
+# the implementation against the official KAT files of the UOV team. The test
+# vectors are written to ./data, the KAT files are read from ./kat.
+#
+# Execute via: python3 uov.py  (within the uov_ref/ folder and with active venv)
+
 from sage.all__sagemath_modules import GF, matrix, block_matrix, identity_matrix, random_matrix, PolynomialRing
 from random import randint, randbytes
 from math import log2,ceil 

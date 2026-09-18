@@ -10,6 +10,9 @@
 // SPDX-License-Identifier: CC0-1.0 OR Apache-2.0
 /////////////////////////////////////////////////////////////////////
 
+// SHAKE-256 based on the Keccak-f[1600] permutation. Used for hashing
+// and for sampling vinegar vectors.
+
 #pragma once
 #include "uov.h"
 

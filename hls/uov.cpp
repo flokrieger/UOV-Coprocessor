@@ -1,3 +1,10 @@
+// Top level of the UOV co-processor HLS code. Contains the control FSM, the 
+// matrix and hash subsystems, and the shared arithmetic datapath. This file 
+// and the included HLS code is compiled to RTL by Vitis HLS via 
+// vitis/run_vitis_hls.tcl.
+//
+// Execute via: vitis_hls -f run_vitis_hls.tcl (within the vitis/ folder)
+
 #include "uov.h"
 #include "aes.h"
 #include "ge.h"

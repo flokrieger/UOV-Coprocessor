@@ -1,3 +1,11 @@
+# Host script running the tests and the TVLA trace collection on the
+# ChipWhisperer CW305 board. Flashes the FPGA, checks the signing results
+# against the reference data in uov_ref/data/, and captures power traces for a
+# fixed-vs-random TVLA to evaluate the blinding. The traces and t-test results
+# are written to ../results.
+#
+# Execute via: python3 mainCW305.py  (from within the cw/ folder and with active venv)
+
 import chipwhisperer as cw
 from random import randint, seed, randbytes
 import matplotlib.pyplot as plt

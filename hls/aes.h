@@ -7,6 +7,10 @@
 // SPDX-License-Identifier: CC0-1.0 OR Apache-2.0
 /////////////////////////////////////////////////////////////////////
 
+// AES-128 and AES-128-CTR implementation in HLS. Used to expand the
+// public key matrices P1 and P2 from the public key seed. Also used
+// to sample the blinding matrices.
+
 #pragma once
 #include <stdint.h>
 #include "uov.h"

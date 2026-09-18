@@ -1,3 +1,6 @@
+// Gaussian elimination. Brings the linear system into echelon form and solves it
+// by back substitution during signing.
+
 #include "uov.h"
 
 // States of the Gaussian Elimination FSM

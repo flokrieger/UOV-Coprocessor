@@ -1,3 +1,8 @@
+// Testbench for the UOV co-processor. Runs signing with and without oil
+// space blinding as well as verification of valid and invalid signatures for
+// all security levels. Compares the results against the reference data in 
+// uov_ref/data/
+
 module uov_wrapper_tb();
   import uov_pkg::*;
 

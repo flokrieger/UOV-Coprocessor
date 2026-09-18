@@ -1,3 +1,6 @@
+// Common parameters, data types and function declarations shared across HLS
+// sources of the UOV co-processor.
+
 #pragma once
 #include "field.h"
 #include <ap_int.h>

@@ -6,6 +6,8 @@
 // SPDX-License-Identifier: CC0-1.0 OR Apache-2.0
 /////////////////////////////////////////////////////////////////////
 
+// Arithmetic in the AES field GF(256), as specified in UOV.
+
 #pragma once
 #include <inttypes.h>
 

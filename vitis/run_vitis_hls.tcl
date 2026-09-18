@@ -1,5 +1,5 @@
 # Vitis HLS Synthesis
-# Generates RTL from C++ for the ChipWhisperer cw308 Artix board
+# Generates RTL from C++ for the ChipWhisperer cw308 Artix-7 100T board
 # 
 # Execute via: vitis_hls -f run_vitis_hls.tcl
 

@@ -1,3 +1,10 @@
+// C++ testbench for the HLS UOV co-processor, used by the Vitis HLS C simulation
+// and the post-synthesis co-simulation. Runs signing and verification tests for
+// different security levels, and compares intermediate and final results against
+// the reference data in uov_ref/data.
+//
+// Execute via: vitis_hls -f run_vitis_hls.tcl (within the vitis/ folder)
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

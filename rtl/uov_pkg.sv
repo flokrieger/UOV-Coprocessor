@@ -1,3 +1,6 @@
+// Package holding the parameters for the UOV co-processor.
+// These values must match the definitions in the HLS code.
+
 package uov_pkg;
 
   // UOV parameters. Must match with HLS code:

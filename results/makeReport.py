@@ -1,3 +1,10 @@
+# Collects the output products of the artifact run into a single PDF report.
+# Parses the sign and verify latencies from results/vivado.log, the area and 
+# timing results from results/utilization.rpt and results/timing.rpt, and 
+# plots the TVLA results from the trace files in results/.
+#
+# Execute via: python3 makeReport.py  (within the results/ folder and with active venv)
+
 import glob
 import os
 import re

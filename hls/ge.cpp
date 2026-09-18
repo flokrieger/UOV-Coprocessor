@@ -1,3 +1,6 @@
+// Gaussian elimination. Brings the linear system into echelon form and solves it
+// by back substitution during signing.
+
 #include "ge.h"
 
 void ef_datapath(const ge_state_t state,
