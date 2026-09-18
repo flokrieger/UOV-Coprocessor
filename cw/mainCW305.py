@@ -94,7 +94,7 @@ for sec_lvl in [UOV_LVL_TOY,UOV_LVL_Ip,UOV_LVL_III,UOV_LVL_V]:
     print("  -> SIGN FAILED")
 
 if ok:
-    print("All outputs match reference ✓")
+    print("All outputs match reference")
 else:
     print("Output verification FAILED")
     exit(-1)
@@ -108,6 +108,7 @@ else:
 CHUNK_TRACES  = 500   # traces buffered before each fit_u
 
 def runTraceCollection(checkpoints, rng_en, sec_lvl):
+  ''' Captures fixed-vs-random power traces and stores the TVLA results at the given checkpoints '''
   checkpoint_set = set(checkpoints)
   num_traces_max = checkpoints[-1]
 

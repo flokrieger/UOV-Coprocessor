@@ -67,6 +67,10 @@ MEM_vs_ID  = 4
 # This function is derived from the ChipWhisperer Jupyter notebooks:
 # https://github.com/newaetech/chipwhisperer-jupyter
 def initCW(bitstream_file, use_scope=True):
+  ''' Connects to the CW305 target and the scope. 
+      Configures sampling rate, number of samples, etc. and 
+      flashes the given bitstream '''
+  
   scope = None
 
   if use_scope:
@@ -130,12 +134,14 @@ def initCW(bitstream_file, use_scope=True):
 
 
 def applyReset(target):
+  ''' Asserts the reset of the UOV co-processor '''
   time.sleep(0.01)
   one = 1  
   target.fpga_write(target.REG_RST, one.to_bytes(1, 'little'))
   time.sleep(0.01)
 
 def releaseReset(target):
+  ''' Releases the reset of the UOV co-processor '''
   time.sleep(0.01)
   zero = 0  
   target.fpga_write(target.REG_RST, zero.to_bytes(1, 'little'))
@@ -175,6 +181,7 @@ def readBRAM(target, length, bram_id, addr_offset=0):
   return ret
 
 def testBRAM(target, bram_id):
+  ''' Writes random data to the given BRAM and reads it back to test the interface '''
   print(f"Testing BRAM {bram_id}...")
   length = {
       BRAM_O_ID:  BRAM_O_DEPTH,
@@ -202,6 +209,7 @@ def testBRAM(target, bram_id):
 
 
 def runUOV(target, block=True):
+  ''' Triggers the UOV operation and waits until the co-processor signals done '''
   target.go()
   time.sleep(0.001)
   i = 1
@@ -215,9 +223,11 @@ def runUOV(target, block=True):
 
 
 def sendSeedPK(target, seed_pk : bytes):
+  ''' Writes the public key seed to the FPGA '''
   target.fpga_write(target.REG_SEED_PK, seed_pk)
 
 def sendSeedBL(target, seed_bl : bytes):
+  ''' Writes the seed of the blinding RNG to the FPGA '''
   target.fpga_write(target.REG_SEED_BL, seed_bl)
 
 def sendRngEnable(target, rng_en):
@@ -225,6 +235,7 @@ def sendRngEnable(target, rng_en):
   target.fpga_write(target.REG_TRNG_EN, int(bool(rng_en)).to_bytes(1, 'little'))
 
 def sendMsgLen(target, msg_len : bytes):
+  ''' Writes the message length in bytes to the FPGA '''
   assert len(msg_len) == 2
   target.fpga_write(target.REG_MSG_LEN, msg_len)
 
@@ -236,6 +247,7 @@ def sendDoVerif(target, do_verif, do_blinding=True):
   target.fpga_write(target.REG_DO_VERIF, i.to_bytes(1, 'little'))
 
 def sendParameters(target, sec_lvl):
+  ''' Writes the parameters of the given security level to the FPGA '''
   lvl       = LEVELS[sec_lvl]
   m, v      = lvl["m"], lvl["v"]
   p1_bytes  = m * v * (v + 1) // 2
@@ -250,9 +262,11 @@ def sendParameters(target, sec_lvl):
 
 
 def lvl_suffix(sec_lvl):
+  ''' Returns the reference file suffix of the given security level '''
   return LEVELS[sec_lvl]["suffix"]
 
 def bramO_words(sec_lvl):
+  ''' Returns the number of BRAM_O words used by the given security level '''
   return LEVELS[sec_lvl]["m"] * LEVELS[sec_lvl]["n_padded"] // W_FE
 
 def ref_path(base, sec_lvl):
@@ -260,6 +274,7 @@ def ref_path(base, sec_lvl):
   return str(_DATA_DIR / f"{base}_{lvl_suffix(sec_lvl)}.txt")
 
 def load_vector(path, n):
+  ''' Reads a vector of n elements from an indexed reference file '''
   arr = [0] * n
   with open(path, 'r') as f:
     tokens = f.read().split()
@@ -271,6 +286,7 @@ def load_vector(path, n):
   return arr
 
 def load_matrix(path, cols):
+  ''' Reads a matrix from an indexed reference file into a flat row-major array '''
   with open(path, 'r') as f:
     tokens = f.read().split()
   arr = [0] * len(tokens)
@@ -281,6 +297,7 @@ def load_matrix(path, cols):
   return arr
 
 def load_seed_pk(sec_lvl):
+  ''' Reads the public key seed of the given security level from file '''
   path = ref_path("seed_pk", sec_lvl)
   with open(path, 'r') as f:
     vals = [int(x, 16) for x in f.read().split()]
@@ -288,6 +305,7 @@ def load_seed_pk(sec_lvl):
   return bytes(vals[:UOV_SEED_PK_BYTES])
 
 def load_seed_bl(sec_lvl):
+  ''' Reads the blinding seed of the given security level from file '''
   path = ref_path("seed_bl", sec_lvl)
   with open(path, 'r') as f:
     vals = [int(x, 16) for x in f.read().split()]
@@ -376,6 +394,7 @@ def randomizeOcontent(sec_lvl, bram_O, use_lu = False):
   return out
 
 def prepareBramO(sec_lvl):
+  ''' Builds the BRAM_O image from the reference oil space matrix O '''
   m, n, n_padded = LEVELS[sec_lvl]["m"], LEVELS[sec_lvl]["n"], LEVELS[sec_lvl]["n_padded"]
   O_ref = load_matrix(ref_path("O_ref", sec_lvl), m)
   bram_O = [0] * BRAM_O_DEPTH
@@ -390,9 +409,7 @@ def prepareBramO(sec_lvl):
   return bram_O
 
 def load_hash_input(sec_lvl):
-  '''
-    Read the Keccak hash input (msg || salt || seed_sk) from input file
-    '''
+  ''' Read the Keccak hash input (msg || salt || seed_sk) from input file '''
   with open(ref_path("hash_in_ref", sec_lvl), 'r') as f:
     in_bytes = [int(x, 16) for x in f.read().split()]
   nbytes  = len(in_bytes)
@@ -413,6 +430,7 @@ def load_hash_input(sec_lvl):
   return words, msg_len
 
 def verifyOb(fpga_data, sec_lvl):
+  ''' Compares the blinded oil space read from the FPGA against the reference '''
   m, n, n_padded = LEVELS[sec_lvl]["m"], LEVELS[sec_lvl]["n"], LEVELS[sec_lvl]["n_padded"]
   Ob_ref = load_matrix(ref_path("Ob_ref", sec_lvl), m)
   mismatches = 0
@@ -426,12 +444,13 @@ def verifyOb(fpga_data, sec_lvl):
           print(f"verifyOb[{lvl_suffix(sec_lvl)}] mismatch [{row}][{col}]: got {got:02x} ref {ref:02x}")
         mismatches += 1
   if mismatches:
-    print(f"verifyOb[{lvl_suffix(sec_lvl)}]: {mismatches} mismatches")
+    print(f"verifyOb[{lvl_suffix(sec_lvl)}]: {mismatches} mismatches [FAIL]")
   else:
-    print(f"verifyOb[{lvl_suffix(sec_lvl)}]: matches Ob_ref ✓")
+    print(f"verifyOb[{lvl_suffix(sec_lvl)}]: matches Ob_ref [OK]")
   return mismatches == 0
 
 def verifyY(fpga_data, sec_lvl):
+  ''' Compares the vector y read from the FPGA against the reference '''
   m = LEVELS[sec_lvl]["m"]
   y_ref = load_vector(ref_path("y_ref", sec_lvl), m)
   mismatches = 0
@@ -443,12 +462,13 @@ def verifyY(fpga_data, sec_lvl):
         print(f"verifyY[{lvl_suffix(sec_lvl)}] mismatch [{k}]: got {got:02x} ref {ref:02x}")
       mismatches += 1
   if mismatches:
-    print(f"verifyY[{lvl_suffix(sec_lvl)}]: {mismatches} mismatches")
+    print(f"verifyY[{lvl_suffix(sec_lvl)}]: {mismatches} mismatches [FAIL]")
   else:
-    print(f"verifyY[{lvl_suffix(sec_lvl)}]: matches y_ref ✓")
+    print(f"verifyY[{lvl_suffix(sec_lvl)}]: matches y_ref [OK]")
   return mismatches == 0
 
 def verifyS(fpga_data, sec_lvl):
+  ''' Compares the signature s read from the FPGA against the reference '''
   n = LEVELS[sec_lvl]["n"]
   s_ref = load_vector(ref_path("s_ref", sec_lvl), n)
   mismatches = 0
@@ -460,7 +480,7 @@ def verifyS(fpga_data, sec_lvl):
         print(f"verifyS[{lvl_suffix(sec_lvl)}] mismatch [{k}]: got {got:02x} ref {ref:02x}")
       mismatches += 1
   if mismatches:
-    print(f"verifyS[{lvl_suffix(sec_lvl)}]: {mismatches} mismatches")
+    print(f"verifyS[{lvl_suffix(sec_lvl)}]: {mismatches} mismatches [FAIL]")
   else:
-    print(f"verifyS[{lvl_suffix(sec_lvl)}]: matches s_ref ✓")
+    print(f"verifyS[{lvl_suffix(sec_lvl)}]: matches s_ref [OK]")
   return mismatches == 0

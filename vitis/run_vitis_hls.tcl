@@ -127,8 +127,6 @@ if {[catch {exec unzip -o -q $ip_zip -d $unpack_dir} err]} {
     exit 1
 }
 
-# An ip_catalog export keeps the sources under hdl/, older/other layouts put
-# verilog/ directly at the archive root - accept either.
 set verilog_dir [file join $unpack_dir hdl verilog]
 file mkdir $rtl_dir
 foreach f [glob -nocomplain -directory $rtl_dir -- *.v *.dat] {

@@ -53,6 +53,7 @@ NUM_KAT_TESTS = 5          # Number of KAT tests for each security level.
                            # There, the UOV team hosts the full set of KAT tests (~2GB)
 class NIST_KAT_DRBG:
   def __init__(self, seed):
+    ''' Seeds the DRBG with a 48-byte seed as specified by NIST '''
     self.seed_length = 48
     assert len(seed) == self.seed_length
     self.key = b'\x00' * 32
@@ -63,10 +64,12 @@ class NIST_KAT_DRBG:
     self.ctr = update[32:]
 
   def __increment_ctr(self):
+    ''' Increments the 128-bit counter block by one '''
     x = int.from_bytes(self.ctr, 'big') + 1
     self.ctr = x.to_bytes(16, byteorder='big')
 
   def get_bytes(self, num_bytes):
+    ''' Returns num_bytes of AES-ECB output of the incrementing counter '''
     tmp = b''
     cipher = AES.new(self.key, AES.MODE_ECB)
     while len(tmp) < num_bytes:
@@ -75,13 +78,14 @@ class NIST_KAT_DRBG:
     return tmp[:num_bytes]
 
   def random_bytes(self, num_bytes):
+    ''' Returns num_bytes of random output and updates the DRBG state '''
     output_bytes = self.get_bytes(num_bytes)
     update = self.get_bytes(48)
     self.key = update[:32]
     self.ctr = update[32:]
     return output_bytes
 
-drbg    = NIST_KAT_DRBG(bytes([i for i in range(48)]))
+drbg = NIST_KAT_DRBG(bytes([i for i in range(48)]))
 
 
 # Round 2 Parameters for UOV, including the toy parameter set:
@@ -134,6 +138,8 @@ DEFAULT_PARAMETERS = {
 }
 
 def aes_ctr_prng(key: bytes, initial_counter_block: bytes, out_len: int) -> bytes:
+  ''' Returns out_len bytes of AES-128-CTR keystream 
+      starting from initial_counter_block using the key '''
   if len(initial_counter_block) != 16:
     raise ValueError("counter block must be 16 bytes")
   ctr_int = int.from_bytes(initial_counter_block, "big")  # define endianness!
@@ -143,16 +149,19 @@ def aes_ctr_prng(key: bytes, initial_counter_block: bytes, out_len: int) -> byte
 
 
 def writeElements(name, elements):
+  ''' Writes a list of integers (elements) as hex values into name.txt '''
   with open(OUTPUT_PATH + name + ".txt", "w") as f:
     for e in elements:
       f.write(hex(e)[2:] + " ")
 
 def writeVector(name, vec):
+  ''' Writes a column vector vec as 'row value' lines into name.txt '''
   with open(OUTPUT_PATH + name + ".txt", "w") as f:
     for r in range(vec.nrows()):
       f.write(str(r) + " " + hex(vec[r,0].to_integer())[2:] + "\n")
 
 def writeMatrix(name, mat):
+  ''' Writes a matrix mat as 'column row value' lines into name.txt '''
   with open(OUTPUT_PATH + name + ".txt", "w") as f:
     for r in range(mat.ncols()):
       for c in range(mat.nrows()):
@@ -161,6 +170,7 @@ def writeMatrix(name, mat):
 
 class UOV:
   def __init__(self, parameter_set, doBlinding=False):
+    ''' Sets the UOV parameters '''
     self.doBlinding = doBlinding
     self.set_name = str(parameter_set)
     self.name = parameter_set["name"]
@@ -184,6 +194,7 @@ class UOV:
       self.F = GF(2**4, name='x', modulus=mod)
 
   def _expandSK(self, seed_sk):
+    ''' Expands the secret key seed into the public key seed and the oil space O '''
     bytestring = shake_256(seed_sk).digest(self.pk_seed_len//8 + int(ceil(self.v*self.m*self.logq/8)))
     seed_pk = bytestring[0:self.pk_seed_len//8]
     O = self.bytesToMatrixColMaj(bytestring[self.pk_seed_len//8:],self.v,self.m, 1)[0]
@@ -191,6 +202,7 @@ class UOV:
     return seed_pk, O
 
   def matrixToBytesColMaj(self, matrices):
+    ''' Serializes the matrices into bytes in column-major order '''
     n_mat = len(matrices)
     rows = matrices[0].nrows()
     cols = matrices[0].ncols()
@@ -207,6 +219,7 @@ class UOV:
       return self.nibblesToBytes(bytes(out))
 
   def matrixToBytes(self, matrices, triangular):
+    ''' Serializes the matrices into bytes in row-major order, optionally only the upper triangle '''
     n_mat = len(matrices)
     rows = matrices[0].nrows()
     cols = matrices[0].ncols()
@@ -224,6 +237,7 @@ class UOV:
       return self.nibblesToBytes(bytes(out))
 
   def bytesToMatrixColMaj(self, bytestring, rows, cols, n_mat):
+    ''' Deserializes n_mat matrices from bytestring in column-major order '''
     idx = 0
     mats = [matrix(self.F, rows, cols) for _ in range(n_mat)]
 
@@ -241,6 +255,7 @@ class UOV:
     return mats
 
   def bytesToMatrix(self, bytestring, rows, cols, triangular, n_mat):
+    ''' Deserializes n_mat matrices from bytestring in row-major order, optionally only the upper triangle '''
     idx = 0
     mats = [matrix(self.F, rows, cols) for _ in range(n_mat)]
 
@@ -265,6 +280,7 @@ class UOV:
     return mats
 
   def bytesToNibbles(self, bytestring):
+    ''' Splits each byte into two nibbles for the GF(16) parameter set '''
     nibbles = bytes([])
     for i in range(len(bytestring)):
       nibbles += bytes([bytestring[i] % self.q])
@@ -273,12 +289,14 @@ class UOV:
     return nibbles
 
   def nibblesToBytes(self, nibbles):
+    ''' Packs two nibbles into one byte for the GF(16) parameter set '''
     bytestring = bytes()
     for i in range(0,len(nibbles),2):
       bytestring += bytes([(nibbles[i+1] << self.logq) | nibbles[i]])
     return bytestring
 
   def _expandP(self, seed_pk):
+    ''' Expands the public key matrices P1 and P2 from the public key seed '''
     p1_nonzero_el = self.v*(self.v+1)//2
     bytestring = aes_ctr_prng(seed_pk, bytes([0]*(128//8)), (p1_nonzero_el + self.v*self.m)*self.logq//8*self.m)
     P1 = self.bytesToMatrix(bytestring[: p1_nonzero_el*self.m*self.logq//8],self.v,self.v, True, self.m)
@@ -287,6 +305,7 @@ class UOV:
     return P1, P2
   
   def _upper(self, matrix):
+    ''' Folds a square matrix into its upper triangular representation '''
     assert matrix.nrows() == matrix.ncols()
     for j in range(0, matrix.nrows()):
       for k in range(j+1, matrix.nrows()):
@@ -367,6 +386,7 @@ class UOV:
     return esk
   
   def expandPK(self, cpk):
+    ''' Expands the compact public key cpk into the full public key matrices '''
     P1, P2 = self._expandP(cpk[0])
     P3 = cpk[1]
     P = [block_matrix([[P1[i], P2[i]], [matrix(self.F, self.m, self.v), P3[i]]]) for i in range(self.m)]
