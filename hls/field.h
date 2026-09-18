@@ -1,3 +1,11 @@
+/////////////////////////////////////////////////////////////////////
+// Derived from the UOV reference implementation (pqov):
+// URL: https://github.com/pqov/pqov
+// See src/gf16.h for the original GF(256) arithmetic.
+//
+// SPDX-License-Identifier: CC0-1.0 OR Apache-2.0
+/////////////////////////////////////////////////////////////////////
+
 #pragma once
 #include <inttypes.h>
 

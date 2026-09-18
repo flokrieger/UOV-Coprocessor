@@ -1,6 +1,7 @@
 .venv
 
-rtl/vitis_hls_export
+rtl/vitis_hls_export/*
+!rtl/vitis_hls_export/Readme.md
 
 vitis/vitis_hls_uov
 vitis/vitis_hls.log

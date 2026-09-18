@@ -1,6 +1,9 @@
 `timescale 1ns / 1ps
 
 // AXI4-Lite slave implementing the Vitis kernel control register map.
+// The control register map (CTRL, GIER, IP_IER, IP_ISR) follows AMD/Xilinx 
+// RTL kernel requirements here:
+// https://docs.amd.com/r/2022.2-English/ug1393-vitis-application-acceleration/Requirements-of-an-RTL-Kernel
 //
 // Address Map:
 //

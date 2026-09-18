@@ -6,7 +6,7 @@ import numpy as np
 import os
 from datetime import datetime
 from tqdm import tqdm
-from myCW305interface import *
+from interfaceCW305 import *
 
 
 bitstream_file = "../results/uov_cw_reference.bit"

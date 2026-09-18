@@ -1,9 +1,13 @@
+/////////////////////////////////////////////////////////////////////
+// Derived from the OpenNTT project:
+// OpenNTT - 2024
+// Florian Krieger, Florian Hirner, Ahmet Can Mert, Sujoy Sinha Roy
+// Contact: florian.krieger@iaik.tugraz.at
+// URL: https://github.com/flokrieger/OpenNTT
+//
+// Licensed under the MIT License.
+/////////////////////////////////////////////////////////////////////
 
-/*
-  Graz, 2022
-  Ahmet Can Mert
-  <ahmet.mert@iaik.tugraz.at>
-*/
 
 // shift register with a variable number of registers
 // see https://docs.xilinx.com/r/en-US/ug901-vivado-synthesis/Shift-Registers

@@ -1,5 +1,5 @@
 # Vitis HLS Synthesis
-# Generates RTL from C++ for the Artix board
+# Generates RTL from C++ for the ChipWhisperer cw308 Artix board
 # 
 # Execute via: vitis_hls -f run_vitis_hls.tcl
 
@@ -117,8 +117,10 @@ if {[catch {exec unzip -o -q $ip_zip -d $unpack_dir} err]} {
 # An ip_catalog export keeps the sources under hdl/, older/other layouts put
 # verilog/ directly at the archive root - accept either.
 set verilog_dir [file join $unpack_dir hdl verilog]
-file delete -force $rtl_dir
 file mkdir $rtl_dir
+foreach f [glob -nocomplain -directory $rtl_dir -- *.v *.dat] {
+    file delete -force $f
+}
 
 set copied 0
 foreach f [glob -nocomplain -directory $verilog_dir -- *] {

@@ -11,8 +11,7 @@
 # file in the Vivado Tcl Shell.
 #
 # * Note that the runs in the created project will be configured the same way as the
-#   original project, however they will not be launched automatically. To regenerate the
-#   run results please launch the synthesis/implementation runs as needed.
+#   original project.
 #
 #*****************************************************************************************
 # NOTE: In order to use this script for source control purposes, please make sure that the

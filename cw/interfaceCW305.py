@@ -53,6 +53,8 @@ BRAM_T_ID  = 2
 MEM_ty_ID  = 3
 MEM_vs_ID  = 4
 
+# This function is derived from the ChipWhisperer Jupyter notebooks:
+# https://github.com/newaetech/chipwhisperer-jupyter
 def initCW(bitstream_file, use_scope=True):
   scope = None
 
@@ -60,11 +62,11 @@ def initCW(bitstream_file, use_scope=True):
     scope = cw.scope()
     scope.default_setup()
     if scope._is_husky:
-      scope.adc.samples = 4*32000 # Husky max 131070 samples, 4 samples per FPGA clock cycle
+      scope.adc.samples = 4*32000
     else:
-      scope.adc.samples = 40000 # CW-Lite max 24400
+      scope.adc.samples = 40000
     scope.adc.offset = 0
-    scope.adc.basic_mode = "falling_edge"  # tio_trigger rests high, falls at op start
+    scope.adc.basic_mode = "falling_edge"
     scope.trigger.triggers = "tio4"
     scope.io.tio1 = "serial_rx"
     scope.io.tio2 = "serial_tx"

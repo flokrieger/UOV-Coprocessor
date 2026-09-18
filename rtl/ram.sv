@@ -1,9 +1,12 @@
-
-/*
-  Graz, 2022
-  Ahmet Can Mert
-  <ahmet.mert@iaik.tugraz.at>
-*/
+/////////////////////////////////////////////////////////////////////
+// Derived from the OpenNTT project:
+// OpenNTT - 2024
+// Florian Krieger, Florian Hirner, Ahmet Can Mert, Sujoy Sinha Roy
+// Contact: florian.krieger@iaik.tugraz.at
+// URL: https://github.com/flokrieger/OpenNTT
+//
+// Licensed under the MIT License.
+/////////////////////////////////////////////////////////////////////
 
 // parametric RAM
 
