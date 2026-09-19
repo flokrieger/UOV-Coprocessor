@@ -28,7 +28,7 @@ import uov_pkg::*;
   output  logic                           ready,
   output  logic                           done,
 
-  // UOV rundtime configuration:
+  // UOV runtime configuration:
   input  logic [15:0]                     msg_len_bytes,
   input  logic [10:0]                     uov_m,
   input  logic [10:0]                     uov_v,

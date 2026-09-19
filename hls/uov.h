@@ -25,11 +25,6 @@
 #define UOV_LVL_Ip_N (UOV_LVL_Ip_M + UOV_LVL_Ip_V)
 #define UOV_LVL_Ip_N_PADDED (112)
 
-#define UOV_LVL_Is_M (64)
-#define UOV_LVL_Is_V (96)
-#define UOV_LVL_Is_N (UOV_LVL_Is_M + UOV_LVL_Is_V)
-#define UOV_LVL_Is_N_PADDED (96)
-
 #define UOV_LVL_III_M (72)
 #define UOV_LVL_III_V (112)
 #define UOV_LVL_III_N (UOV_LVL_III_M + UOV_LVL_III_V)

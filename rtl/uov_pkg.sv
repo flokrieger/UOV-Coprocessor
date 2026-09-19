@@ -28,11 +28,6 @@ package uov_pkg;
   localparam UOV_LVL_Ip_N        = UOV_LVL_Ip_M+UOV_LVL_Ip_V;
   localparam UOV_LVL_Ip_N_PADDED = 112;
 
-  localparam UOV_LVL_Is_M        = 64;
-  localparam UOV_LVL_Is_V        = 96;
-  localparam UOV_LVL_Is_N        = UOV_LVL_Is_M+UOV_LVL_Is_V;
-  localparam UOV_LVL_Is_N_PADDED = 96;
-
   localparam UOV_LVL_III_M        = 72;
   localparam UOV_LVL_III_V        = 112;
   localparam UOV_LVL_III_N        = UOV_LVL_III_M+UOV_LVL_III_V;

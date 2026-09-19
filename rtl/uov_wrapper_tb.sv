@@ -571,7 +571,7 @@ module uov_wrapper_tb();
 
   // ===================== Verification Helpers ==========================
 
-  // Loas the signature s into BRAM_vs
+  // Loads the signature s into BRAM_vs
   task automatic load_bram_vs_s(input logic [2:0] sec_lvl, input int invalid);
     field_t s_ref [0:UOV_LVL_V_N-1];
     int fd, idx, status;

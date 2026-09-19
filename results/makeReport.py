@@ -38,6 +38,7 @@ UTIL_ROWS = ["Slice LUTs", "Slice Registers", "Block RAM Tile", "DSPs"]
 TIMING_KEYS = ["WNS(ns)", "TNS(ns)", "TNS failing endpoints", "TNS total endpoints",
                "WHS(ns)", "THS(ns)", "THS failing endpoints", "THS total endpoints"]
 
+# This must match with the CW305/Husky config:
 TARGET_POINTS = 5000
 SAMPLES_PER_CYCLE = 4
 DROP_FIRST = 168 * SAMPLES_PER_CYCLE

@@ -25,7 +25,7 @@ The repository contains the following folders and important files:
   - `mainCW305.py`: runs functional tests on the CW305 FPGA and performs the TVLA trace collection
 - `results`: output products of the runs, such as log files, bitstream, reports, and traces
   - `makeReport.py`: collects the output products and compiles them into `results/report.pdf`
-  - `uov_cw_reference.bit`: pre-built reference bitstream
+  - `uov_cw_reference.bit`: pre-built reference bitstream. You can use this instead of running the full compilation flow
 
 
 ## Requirements to Run the Artifact
