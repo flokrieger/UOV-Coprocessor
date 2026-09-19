@@ -70,10 +70,7 @@ The output must list both `chipwhisperer` and `plugdev`.
 git clone https://github.com/flokrieger/UOV-Coprocessor.git
 ```
 
-**Step 4:** Connect the CW305 target board with the Husky and the host machine as shown here:
-TODO
-
-**Step 5:** If you do not have Vivado/VitisHLS version 2022.2 installed, please follow the instructions [here](https://cloud.tugraz.at/index.php/s/k7SL46fbtCGM3zc) to install the tools. This will take a while to download Vivado/VitisHLS.
+**Step 4:** If you do not have Vivado/VitisHLS version 2022.2 installed, please follow the instructions [here](https://cloud.tugraz.at/index.php/s/k7SL46fbtCGM3zc) to install the tools. This will take a while to download Vivado/VitisHLS.
 
 Then, make sure Vivado and VitisHLS are in `$PATH`. If they are not, source the Vivado settings script (adapt the path to your installation). This also adds VitisHLS to `$PATH`:
 ```
@@ -99,6 +96,9 @@ IP Build 3669848 on Fri Oct 14 08:30:02 MDT 2022
 Tool Version Limit: 2019.12
 Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
 ```
+
+**Step 5:** Connect the CW305 target board with the Husky and the host machine as shown here:
+TODO
 
 ## Run the Artifact
 The artifact is fully automated. You only need to `cd` into the repository's root folder and run:
