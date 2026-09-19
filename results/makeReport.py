@@ -248,13 +248,13 @@ if __name__ == "__main__":
 
   lines = [""]
 
-  lines += ["Stages", "------"]
+  lines += ["----------------------------------------------------------------------------------------------", "Stages", "----------------------------------------------------------------------------------------------"]
   lines.append("  Vitis HLS        : %s" % ("passed" if "IP export passed" in hls_log else "MISSING/FAILED"))
   lines.append("  RTL simulation   : %s" % ("passed" if "uov_wrapper_tb: all checks passed" in vivado_log else "MISSING/FAILED"))
   lines.append("  Implementation   : %s" % ("passed" if "STATUS: Bitstream written" in vivado_log else "MISSING/FAILED"))
   lines.append("")
 
-  lines += ["----------------------------------------------------------------------------------------------", "Simulated latency (clock cycles). This maps to Table 4 in the paper.", "----------------------------------------------------------------------------------------------"]
+  lines += ["----------------------------------------------------------------------------------------------", "Simulated latency (clock cycles). This maps to Table 4 and Table 6 in the paper.", "Note: due to run variations, the reported latency might slightly differ from the paper.", "----------------------------------------------------------------------------------------------"]
   sign, verif = getLatencies(vivado_log)
   if sign or verif:
     width = max([len(l) for l in sign] + [len(l) for l, _ in verif] + [12])
@@ -289,6 +289,8 @@ if __name__ == "__main__":
     lines.append("  results/timing.rpt missing")
   if not tvla:
     lines += ["", "TVLA", "----", "  no traces found in results/"]
+
+  lines += ["", "----------------------------------------------------------------------------------------------", "TVLA with random messages and salts", "----------------------------------------------------------------------------------------------"]
 
   out = os.path.join(RESULTS_DIR, "report.pdf")
   with PdfPages(out) as pdf:
