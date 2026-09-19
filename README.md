@@ -30,7 +30,7 @@ The repository contains the following folders and important files:
 
 ## Requirements to Run the Artifact
 ### Hardware:
-- A host machine with 32GB of RAM, 5GB of available disk space and a recent CPU
+- A host machine with 32GB of RAM, 5GB of available disk space, a recent CPU, and internet connection
 - ChipWhisperer CW305-A100 with Artix-7 100T FPGA Target ([website](https://rtfm.newae.com/Targets/CW305%20Artix%20FPGA/))
 - ChipWhisperer-Husky ([website](https://chipwhisperer.readthedocs.io/en/latest/Capture/ChipWhisperer-Husky.html))
 - USB and power measurement cables
