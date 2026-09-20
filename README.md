@@ -25,7 +25,7 @@ The repository contains the following folders and important files:
   - `mainCW305.py`: runs functional tests on the CW305 FPGA and performs the TVLA trace collection
 - `results`: output products of the runs, such as log files, bitstream, reports, and traces
   - `makeReport.py`: collects the output products and compiles them into `results/report.pdf`
-  - `uov_cw.bit`: pre-built reference bitstream. You can use this instead of running the full compilation flow
+  - `uov_cw.bit`: pre-built reference bitstream. You can use this instead of running the full compilation flow. Note that a full run overwrites this file with the new build
 
 
 ## Requirements to Run the Artifact
@@ -70,7 +70,7 @@ The output must list both `chipwhisperer` and `plugdev`.
 git clone https://github.com/flokrieger/UOV-Coprocessor.git
 ```
 
-**Step 4:** If you do not have Vivado/VitisHLS version 2022.2 installed, please follow the instructions [here](https://cloud.tugraz.at/index.php/s/k7SL46fbtCGM3zc) to install the tools. This will take a while to download Vivado/VitisHLS.
+**Step 4:** If you do not have Vivado/VitisHLS version 2022.2 installed, please follow the instructions [here](https://cloud.tugraz.at/index.php/s/k7SL46fbtCGM3zc) to install the tools. This will take a while to download Vivado/VitisHLS. You can skip the Vivado/VitisHLS installation if you only want to run TVLA, as described in [Running only TVLA](#running-only-tvla).
 
 Then, make sure Vivado and VitisHLS are in `$PATH`. If they are not, source the Vitis settings script (adapt the path to your installation). This also adds VitisHLS to `$PATH`:
 ```bash
@@ -133,12 +133,12 @@ This allows you to skip the Vivado and VitisHLS steps and you do not have to ins
 ```bash
 ./runArtifact.sh --skip-build
 ```
-This will only report TVLA results in `results/report.pdf` since the other Vivado/VitisHLS-relatedresults are not available.
+This will only report TVLA results in `results/report.pdf` since the other Vivado/VitisHLS-related results are not available.
 
-## TVLA Methodology 
-The default setting of the TVLA in this repo is a non-specific fixed versus random TVLA of the oil space matrix O. The TVLA performs two runs, one with enabled randomness (RNG On) with 100k traces per set, and one with disabled randomness (RNG Off) with only 500 traces per set. You can change the number of traces by adapting `NUM_TRACES_RNG_ON` and `NUM_TRACES_RNG_OFF` in `cw/mainCW305.py:11-12`.
+## TVLA Methodology
+The default setting of the TVLA in this repo is a non-specific fixed versus random TVLA of the oil space matrix O. The TVLA performs two runs, one with enabled randomness (RNG On) with 100k traces per set, and one with disabled randomness (RNG Off) with only 500 traces per set. You can change the number of traces by adapting `NUM_TRACES_RNG_ON` and `NUM_TRACES_RNG_OFF` in `cw/mainCW305.py:32-33`.
 
-In addition, we use random messages and salts for the TVLA, which matches real-world operation. You can change this to fixed message and fixed salt by changing `FIXED_MESSAGE` in `cw/mainCW305.py:13`.
+In addition, we use random messages and salts for the TVLA, which matches real-world operation. You can change this to fixed message and fixed salt by changing `FIXED_MESSAGE` in `cw/mainCW305.py:34`.
 
 ## Contributors
 Florian Krieger (Contact: `florian.krieger (at) tugraz.at`), Maciej Czuprynko, Sujoy Sinha Roy
