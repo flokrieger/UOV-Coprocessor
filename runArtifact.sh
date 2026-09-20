@@ -19,6 +19,20 @@
 
 set -eo pipefail
 
+SKIP_BUILD=0
+usage() {
+  echo "Usage: $(basename "$0") [--skip-build]"
+  echo "  --skip-build  Skip Vitis HLS and Vivado; reuse the bitstream already in results/"
+}
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --skip-build) SKIP_BUILD=1 ;;
+    -h|--help)    usage; exit 0 ;;
+    *)            echo "Unknown option: $1" >&2; usage >&2; exit 1 ;;
+  esac
+  shift
+done
+
 # Set up the python environment used by all steps below
 ~/.local/bin/uv venv --python 3.12
 ~/.local/bin/uv pip install -r requirements.txt
@@ -31,18 +45,22 @@ cd uov_ref
 python3 uov.py
 printf '%s\n\n' "===== Done UOV Python ====="
 
-# Run Vitis HLS to generate the UOV IP
-printf '%s\n\n' "===== Run Vitis HLS ====="
-cd ../vitis
-vitis_hls -f run_vitis_hls.tcl 2>&1 | tee ../results/vitis_hls.log
-printf '%s\n\n' "===== Done Vitis HLS ====="
+if [ "$SKIP_BUILD" -eq 1 ]; then
+  printf '%s\n\n' "===== Skipping Vitis HLS and Vivado ====="
+else
+  # Run Vitis HLS to generate the UOV IP
+  printf '%s\n\n' "===== Run Vitis HLS ====="
+  cd ../vitis
+  vitis_hls -f run_vitis_hls.tcl 2>&1 | tee ../results/vitis_hls.log
+  printf '%s\n\n' "===== Done Vitis HLS ====="
 
-# Run Vivado to simulate, synthesize and implement the design
-# for the ChipWhisperer CW305 FPGA board. This also exports the
-# bitstream, utilization, and timing reports to results/
-printf '%s\n\n' "===== Run Vivado ====="
-vivado -mode batch -source run_vivado_cw.tcl 2>&1 | tee ../results/vivado.log
-printf '%s\n\n' "===== Done Vivado ====="
+  # Run Vivado to simulate, synthesize and implement the design
+  # for the ChipWhisperer CW305 FPGA board. This also exports the
+  # bitstream, utilization, and timing reports to results/
+  printf '%s\n\n' "===== Run Vivado ====="
+  vivado -mode batch -source run_vivado_cw.tcl 2>&1 | tee ../results/vivado.log
+  printf '%s\n\n' "===== Done Vivado ====="
+fi
 
 # Run the tests and trace collection on the FPGA
 printf '%s\n\n' "===== Run Trace Collection on FPGA ====="

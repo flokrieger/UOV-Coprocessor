@@ -25,7 +25,7 @@ The repository contains the following folders and important files:
   - `mainCW305.py`: runs functional tests on the CW305 FPGA and performs the TVLA trace collection
 - `results`: output products of the runs, such as log files, bitstream, reports, and traces
   - `makeReport.py`: collects the output products and compiles them into `results/report.pdf`
-  - `uov_cw_reference.bit`: pre-built reference bitstream. You can use this instead of running the full compilation flow
+  - `uov_cw.bit`: pre-built reference bitstream. You can use this instead of running the full compilation flow
 
 
 ## Requirements to Run the Artifact
@@ -43,16 +43,16 @@ The repository contains the following folders and important files:
 - Installation of `libusb-1.0-0` (Installation instructions are below)
 
 ## Setup
-To prepare your setup, please follow these steps:
+To prepare your setup, please follow the steps below:
 
 **Step 1:** Install the required software if it is missing on your system:
-```
+```bash
 sudo apt install git curl unzip libusb-1.0-0
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
 **Step 2:** By default, accessing the USB devices (CW305 and Husky) requires root permission. To use them as a regular user, install NewAE's udev rules and add your user to the required groups (see the [ChipWhisperer Linux installation guide](https://chipwhisperer.readthedocs.io/en/latest/linux-install.html)):
-```
+```bash
 sudo curl -L -o /etc/udev/rules.d/50-newae.rules https://raw.githubusercontent.com/newaetech/chipwhisperer/develop/50-newae.rules
 sudo udevadm control --reload-rules
 sudo groupadd -fr chipwhisperer
@@ -60,24 +60,24 @@ sudo usermod -aG chipwhisperer $USER
 sudo usermod -aG plugdev $USER
 ```
 Afterwards, reboot the host machine. This is required for the new `udev` rules to be applied. To confirm that the group membership is active, run
-```
+```bash
 id
 ```
 The output must list both `chipwhisperer` and `plugdev`.
 
 **Step 3:** Clone this git repository:
-```
+```bash
 git clone https://github.com/flokrieger/UOV-Coprocessor.git
 ```
 
 **Step 4:** If you do not have Vivado/VitisHLS version 2022.2 installed, please follow the instructions [here](https://cloud.tugraz.at/index.php/s/k7SL46fbtCGM3zc) to install the tools. This will take a while to download Vivado/VitisHLS.
 
-Then, make sure Vivado and VitisHLS are in `$PATH`. If they are not, source the Vivado settings script (adapt the path to your installation). This also adds VitisHLS to `$PATH`:
-```
-source /tools/Xilinx/Vivado/2022.2/settings64.sh
+Then, make sure Vivado and VitisHLS are in `$PATH`. If they are not, source the Vitis settings script (adapt the path to your installation). This also adds VitisHLS to `$PATH`:
+```bash
+source /tools/Xilinx/Vitis/2022.2/settings64.sh
 ```
 To verify, execute these commands:
-```
+```bash
 vivado -version
 vitis_hls -version
 ```
@@ -102,7 +102,7 @@ TODO
 
 ## Run the Artifact
 The artifact is fully automated. You only need to `cd` into the repository's root folder and run:
-```
+```bash
 ./runArtifact.sh
 ```
 
@@ -126,6 +126,14 @@ Now, please open the generated PDF report in `results/report.pdf`. This report c
 - The post-implementation area consumption in LUTs, REGs, DSPs, and BRAMs of the UOV co-processor. The reported area excludes the USB logic needed to interface between CW305 and host. The area results can be matched to Table 5 in the paper (bottom row).
 - The post-implementation timing of the design to demonstrate timing closure (target frequency is 100MHz)
 - The TVLA plot with RNG On and RNG Off using random messages/salts. This can be matched to Figure 4 in the paper. The RNG On case does not show leakage for 100k traces while the RNG Off case already leaks at 500 traces, showing the effectiveness of blinding.
+
+### Running only TVLA
+Instead of running the full compilation, synthesis and implementation, you can directly use the provided bitstream in `results/uov_cw.bit` to run the TVLA on the FPGA.
+This allows you to skip the Vivado and VitisHLS steps and you do not have to install these tools. To run only Python tests, FPGA tests and TVLA, execute:
+```bash
+./runArtifact.sh --skip-build
+```
+This will only report TVLA results in `results/report.pdf` since the other Vivado/VitisHLS-relatedresults are not available.
 
 ## TVLA Methodology 
 The default setting of the TVLA in this repo is a non-specific fixed versus random TVLA of the oil space matrix O. The TVLA performs two runs, one with enabled randomness (RNG On) with 100k traces per set, and one with disabled randomness (RNG Off) with only 500 traces per set. You can change the number of traces by adapting `NUM_TRACES_RNG_ON` and `NUM_TRACES_RNG_OFF` in `cw/mainCW305.py:11-12`.

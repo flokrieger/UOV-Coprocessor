@@ -32,7 +32,6 @@ from interfaceCW305 import *
 NUM_TRACES_RNG_ON = 10**5
 NUM_TRACES_RNG_OFF = 500
 FIXED_MESSAGE = False # True: fixed message and salt, False: random message and salt
-# bitstream_file = "../results/uov_cw_reference.bit" # you can use the reference bit stream to skip the long compilation
 bitstream_file = "../results/uov_cw.bit"
 target, scope  = initCW(bitstream_file, use_scope=True)
 
