@@ -33,9 +33,21 @@ while [ $# -gt 0 ]; do
   shift
 done
 
+if [ "$SKIP_BUILD" -eq 1 ] && [ ! -f results/uov_cw.bit ]; then
+  echo "Error: --skip-build needs a pre-built bitstream at results/uov_cw.bit, but the file is missing." >&2
+  exit 1
+fi
+
+UV="$(command -v uv || true)"
+[ -n "$UV" ] || UV="$HOME/.local/bin/uv"
+if [ ! -x "$UV" ]; then
+  echo "Error: 'uv' was not found!"
+  exit 1
+fi
+
 # Set up the python environment used by all steps below
-~/.local/bin/uv venv --python 3.12
-~/.local/bin/uv pip install -r requirements.txt
+"$UV" venv --python 3.12
+"$UV" pip install -r requirements.txt
 source .venv/bin/activate
 printf '%s\n\n' "===== Done Installation ====="
 

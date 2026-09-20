@@ -5,7 +5,7 @@ This work implements a lightweight hardware co-processor for the UOV post-quantu
 
 ## Structure of the Artifact
 The repository contains the following folders and important files:
-- `runArtifact.sh`: Shell script executing the complete artifact. First, a Python virtual environment is created and with the packages listed in `requirements.txt`. Then, the script generates the reference and input test vectors, runs Vitis HLS and Vivado, performs tests and trace collection on the FPGA, and renders a final artifact report.
+- `runArtifact.sh`: Shell script executing the complete artifact. First, a Python virtual environment is created with the packages listed in `requirements.txt`. Then, the script generates the reference and input test vectors, runs Vitis HLS and Vivado, performs tests and trace collection on the FPGA, and renders a final artifact report.
 - `uov_ref`: SageMath-based reference implementation of UOV. Generates the input and reference data for the HLS / RTL simulation and the FPGA tests. The correctness is verified against the official KAT files of the UOV team.
   - `kat`: A subset of known-answer test (KAT) files of the second-round UOV submission. See `uov_ref/kat/Readme.md` for details.
   - `data`: generated input and reference test vector data (created by `uov.py`)
@@ -72,7 +72,7 @@ git clone https://github.com/flokrieger/UOV-Coprocessor.git
 
 **Step 4:** If you do not have Vivado/VitisHLS version 2022.2 installed, please follow the instructions [here](https://cloud.tugraz.at/index.php/s/k7SL46fbtCGM3zc) to install the tools. This will take a while to download Vivado/VitisHLS. You can skip the Vivado/VitisHLS installation if you only want to run TVLA, as described in [Running only TVLA](#running-only-tvla).
 
-Then, make sure Vivado and VitisHLS are in `$PATH`. If they are not, source the Vitis settings script (adapt the path to your installation). This also adds VitisHLS to `$PATH`:
+Then, make sure Vivado and VitisHLS are in `$PATH`. If they are not, source the Vitis settings script (adapt the path to your installation). This also adds Vivado and VitisHLS to `$PATH`:
 ```bash
 source /tools/Xilinx/Vitis/2022.2/settings64.sh
 ```
@@ -81,7 +81,7 @@ To verify, execute these commands:
 vivado -version
 vitis_hls -version
 ```
-the output should look like this:
+The output should look like this:
 ```
 %> vivado -version
 Vivado v2022.2 (64-bit)
@@ -112,10 +112,10 @@ This script performs the following steps automatically. Alternatively, you can r
 2) Runs the Python/Sage UOV implementation in `uov_ref/uov.py` and checks the correctness against KAT tests in `uov_ref/kat/`. Then, the script prepares test vector files for the HLS, RTL, and FPGA tests in `uov_ref/data/`.
 3) Runs VitisHLS to compile the C++ HLS code in `hls/` into RTL code, stored into `rtl/vitis_hls_export/`. In addition, VitisHLS performs C Simulation and post-synthesis Co-Simulation using the test vectors generated in step 2.
 4) Runs Vivado Behavioural simulation of `rtl/uov_wrapper_tb.sv`, Synthesis, and Implementation for the CW305-A100 board. Generated bitstream and reports are exported to `results/`
-5) Runs `cw/mainCW305.py` which flashes the FPGA, performs functional tests on the FPGA, and collects power traces to perform fixed-vs-random TVLA with 100k traces per set. (For more information about the TVLA methodology, please refer to the [paper](https://eprint.iacr.org/2026/1451) and the section below.)
+5) Runs `cw/mainCW305.py` which flashes the FPGA, performs functional tests on the FPGA, and collects power traces to perform fixed-vs-random TVLA with 100k traces per set. (For more information about the TVLA methodology, please refer to the [paper](https://eprint.iacr.org/2026/1451))
 6) Collects all results in a report stored at `results/report.pdf`
 
-The execution of `runArtifact.sh` takes rather long. Depending on the performance of your host machine, steps 1 to 4 take between 1 hour and 3 hours. The trace collection (step 5) takes about 10 hours for the default configuration. 
+The execution of `runArtifact.sh` takes rather long. Depending on the performance of your host machine, steps 1 to 4 take between 1 hour and 3 hours. The trace collection (step 5) takes about 10 hours for the default configuration.
 
 The successful execution of the artifact script is indicated by the output:
 ```
@@ -136,7 +136,7 @@ This allows you to skip the Vivado and VitisHLS steps and you do not have to ins
 This will only report TVLA results in `results/report.pdf` since the other Vivado/VitisHLS-related results are not available.
 
 ## TVLA Methodology
-The default setting of the TVLA in this repo is a non-specific fixed versus random TVLA of the oil space matrix O. The TVLA performs two runs, one with enabled randomness (RNG On) with 100k traces per set, and one with disabled randomness (RNG Off) with only 500 traces per set. You can change the number of traces by adapting `NUM_TRACES_RNG_ON` and `NUM_TRACES_RNG_OFF` in `cw/mainCW305.py:32-33`.
+The default setting of the TVLA in this repo is a non-specific fixed versus random TVLA of the oil space matrix O using a toy parameter set. (For more information about the TVLA methodology, please refer to the [paper](https://eprint.iacr.org/2026/1451).) The TVLA performs two runs, one with enabled randomness (RNG On) with 100k traces per set, and one with disabled randomness (RNG Off) with only 500 traces per set. You can change the number of traces by adapting `NUM_TRACES_RNG_ON` and `NUM_TRACES_RNG_OFF` in `cw/mainCW305.py:32-33`.
 
 In addition, we use random messages and salts for the TVLA, which matches real-world operation. You can change this to fixed message and fixed salt by changing `FIXED_MESSAGE` in `cw/mainCW305.py:34`.
 
