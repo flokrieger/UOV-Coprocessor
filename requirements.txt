@@ -34,6 +34,7 @@ pyserial==3.5
 python-dateutil==2.9.0.post0
 pyyaml==6.0.3
 scalib==0.6.4
+setuptools==80.10.2
 six==1.17.0
 tqdm==4.68.2
 typing-extensions==4.15.0

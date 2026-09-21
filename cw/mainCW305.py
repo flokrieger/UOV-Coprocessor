@@ -208,19 +208,38 @@ def runTraceCollection(checkpoints, rng_en, sec_lvl):
 
       time.sleep(0.05)
 
-      ret = cw.capture_trace(scope, target, bytearray(), as_int=True)
-      if not ret:
+      # Run the capture:
+      scope.arm()
+      target.go()
+      timeout = scope.capture()
+
+      i = 0
+      while not target.is_done():
+        i += 1
+        time.sleep(0.05)
+        if i > 100:
+          print("Failed capture: Target did not finish operation")
+          applyReset(target)
+          exit(-1)
+
+      if timeout:
         print("Failed capture")
+        applyReset(target)
+        exit(-1)
+
+      wave = scope.get_last_trace(as_int=True)
+      if len(wave) < 1:
+        print("Failed capture: empty trace")
         applyReset(target)
         exit(-1)
       
       applyReset(target)
 
-      buf_traces.append(ret.wave)
+      buf_traces.append(wave)
       buf_labels.append(0 if fixed else 1)
       if trace_sum is None:
-        trace_sum = np.zeros(len(ret.wave), dtype=np.float64)
-      trace_sum += ret.wave
+        trace_sum = np.zeros(len(wave), dtype=np.float64)
+      trace_sum += wave
       trace_count += 1
       trace_fixed_count += (1 if fixed else 0)
 
