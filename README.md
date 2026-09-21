@@ -98,7 +98,8 @@ Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
 ```
 
 **Step 5:** Connect the CW305 target board with the Husky and the host machine as shown here:
-TODO
+
+<img src="board_setup.jpeg" alt="CW305 target board connected to the ChipWhisperer-Husky and the host machine" width="450">
 
 ## Run the Artifact
 The artifact is fully automated. You only need to `cd` into the repository's root folder and run:
