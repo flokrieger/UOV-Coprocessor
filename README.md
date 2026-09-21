@@ -50,7 +50,12 @@ sudo apt install git curl unzip libusb-1.0-0
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-**Step 2:** By default, accessing the USB devices (CW305 and Husky) requires root permission. To use them as a regular user, install NewAE's udev rules and add your user to the required groups (see the [ChipWhisperer Linux installation guide](https://chipwhisperer.readthedocs.io/en/latest/linux-install.html)). Do not connect the USB cables while executing this!
+**Step 2:** Clone this git repository:
+```bash
+git clone https://github.com/flokrieger/UOV-Coprocessor.git
+```
+
+**Step 3:** By default, accessing the USB devices (CW305 and Husky) requires root permission. To use them as a regular user, install NewAE's udev rules and add your user to the required groups (see the [ChipWhisperer Linux installation guide](https://chipwhisperer.readthedocs.io/en/latest/linux-install.html)). Do not connect the USB cables while executing this!
 ```bash
 sudo curl -L -o /etc/udev/rules.d/50-newae.rules https://raw.githubusercontent.com/newaetech/chipwhisperer/develop/50-newae.rules
 sudo groupadd -fr chipwhisperer
@@ -64,11 +69,6 @@ Afterwards, log out and in again or reboot the host machine. To confirm that the
 id
 ```
 The output must list both `chipwhisperer` and `plugdev`.
-
-**Step 3:** Clone this git repository:
-```bash
-git clone https://github.com/flokrieger/UOV-Coprocessor.git
-```
 
 **Step 4:** If you do not have Vivado/VitisHLS version 2022.2 installed, please follow the instructions [here](https://cloud.tugraz.at/index.php/s/k7SL46fbtCGM3zc) to install the tools. This will take a while to download Vivado/VitisHLS. You can skip the Vivado/VitisHLS installation if you only want to run TVLA, as described in [Running only TVLA](#running-only-tvla).
 
