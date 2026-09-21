@@ -37,10 +37,9 @@ The repository contains the following folders and important files:
 
 
 ### Software:
-- Ubuntu version 26.04 or similar
-- Full Vivado + Vitis + Vitis HLS 2022.2 installation ([Installation Guide](https://cloud.tugraz.at/index.php/s/k7SL46fbtCGM3zc))
-- Basic tools like `git`, `curl`, `unzip`, and `uv`. (Installation instructions are below)
-- Installation of `libusb-1.0-0` (Installation instructions are below)
+- Ubuntu version 26.04 or similar. We tested the setup on fresh Ubuntu 26.04 and Xubuntu 26.04 installations.
+- Basic tools like `git`, `curl`, `unzip`, `libusb-1.0-0`, and `uv`. (Installation instructions are below)
+- Optional: Full Vivado + Vitis + Vitis HLS 2022.2 installation ([Installation Guide](https://cloud.tugraz.at/index.php/s/k7SL46fbtCGM3zc)). Only required to reproduce the bitstream and implementation results. We also provide a ready-to-use bitstream for only running the TVLA.
 
 ## Setup
 To prepare your setup, please follow the steps below:
