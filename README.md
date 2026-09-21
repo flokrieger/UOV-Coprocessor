@@ -53,11 +53,11 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 **Step 2:** By default, accessing the USB devices (CW305 and Husky) requires root permission. To use them as a regular user, install NewAE's udev rules and add your user to the required groups (see the [ChipWhisperer Linux installation guide](https://chipwhisperer.readthedocs.io/en/latest/linux-install.html)). Do not connect the USB cables while executing this!
 ```bash
 sudo curl -L -o /etc/udev/rules.d/50-newae.rules https://raw.githubusercontent.com/newaetech/chipwhisperer/develop/50-newae.rules
-sudo udevadm control --reload-rules
 sudo groupadd -fr chipwhisperer
+sudo udevadm control --reload-rules
+sudo udevadm trigger
 sudo usermod -aG chipwhisperer $USER
 sudo usermod -aG plugdev $USER
-sudo udevadm trigger
 ```
 Afterwards, log out and in again or reboot the host machine. To confirm that the group membership is active, run
 ```bash
