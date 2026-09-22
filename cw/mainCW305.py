@@ -19,9 +19,7 @@
 #
 #####################################################################
 
-import chipwhisperer as cw
 from random import randint, seed, randbytes
-import matplotlib.pyplot as plt
 from scalib.metrics import Ttest
 import numpy as np
 import os
@@ -144,17 +142,6 @@ def runTraceCollection(checkpoints, rng_en, sec_lvl):
                t_values=np.asarray(t_values),
                avg_trace=np.asarray(avg_trace))
 
-      fig, ax1 = plt.subplots()
-      fig.suptitle(name)
-      ax1.plot(avg_trace)
-      ax1.set_ylabel("avg trace")
-      ax2 = ax1.twinx()
-      ax2.plot(t_values, 'r-')
-      ax2.plot([5.3]*len(t_values), 'r-')
-      ax2.plot([-5.3]*len(t_values), 'r-')
-      ax2.set_ylabel("t-values")
-      plt.savefig("../results/" + name + ".png")
-      plt.close()
       print(f"  -> snapshot at {num_traces} fixed + {trace_count - num_traces} random traces saved ({name})")
 
   # seed the randomness generation
