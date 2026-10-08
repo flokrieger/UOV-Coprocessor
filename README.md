@@ -149,7 +149,7 @@ Institute of Information Security, Graz University of Technology, Graz, Austria
 ## Acknowledgements
 We used generative AI (Claude Opus 4.8 and Claude Opus 5) for basic coding tasks such as refactoring, debugging, and documentation. All underlying concepts, architectural decisions, and hardware-oriented optimizations were developed by the authors of this work and all AI-generated code was carefully reviewed and validated by the authors.
 
-This project has received funding from the European Union’s Horizon Europe research and innovation programme via the Rigoletto project (grant agreement ID: 101194371). It was also partially supported by the State Government of Styria, Austria - Department Zukunftsfonds Steiermark.
+This project has received funding from the European Union’s Horizon Europe research and innovation programme via the Rigoletto project (grant agreement ID: 101194371). It was also partially supported by the State Government of Styria, Austria - Department Zukunftsfonds Steiermark and through the FWF grant PAT6402023.
 
 We thank Tobias Schneider and Melissa Azouaoui from NXP Semiconductors for the helpful technical discussions and the valuable feedback. We also thank Florian Hirner from Graz University of Technology for hardware-related discussions.
 
