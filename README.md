@@ -34,6 +34,7 @@ The repository contains the following folders and important files:
 - ChipWhisperer CW305-A100 with Artix-7 100T FPGA Target ([website](https://rtfm.newae.com/Targets/CW305%20Artix%20FPGA/))
 - ChipWhisperer-Husky ([website](https://chipwhisperer.readthedocs.io/en/latest/Capture/ChipWhisperer-Husky.html))
 - USB and power measurement cables
+- Optional: 5V DC power supply for the CW305 (see Troubleshooting below)
 
 
 ### Software:
@@ -97,9 +98,17 @@ Tool Version Limit: 2019.12
 Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
 ```
 
-**Step 5:** Connect the CW305 target board with the Husky and the host machine as shown here:
+**Step 5:** Connect the CW305 target board with the Husky as shown here:
 
-<img src="board_setup.jpeg" alt="CW305 target board connected to the ChipWhisperer-Husky and the host machine" width="450">
+<img src="board_setup.jpeg" alt="CW305 target board connected to the ChipWhisperer-Husky and the host machine, with highlighted switch configuration" width="550">
+
+Then, connect both USB cables to the host machine and configure the CW305's configuration switches as follows:
+
+1) Configure the switch (1) as shown in the figure to use the USB-B power supply. (In our experiments, the USB-B power supply was sufficient to operate the CW305. However, we give instructions to run the CW305 board using a more powerful 5V DC Jack in the troubleshooting section below.)
+2) Configure the switch (2) as shown in the figure. This uses the board-internal VCC-INT voltage to run the FPGA.
+3) Put switch (3) to the left position, as shown in the figure. This enables the power supply of the FPGA.
+4) Configure switch (4) as shown in the figure: J16, K15, and L14 should be in the "0" state. K16 should be in the "1" state. This configures the PLL clock supply.
+5) On the back side of the CW305, configure the switch to have M0, M1, and M2 in "1" state.
 
 ## Run the Artifact
 The artifact is fully automated. You only need to `cd` into the repository's root folder and run:
@@ -122,8 +131,10 @@ The successful execution of the artifact script is indicated by the output:
 ```
 ===== ARTIFACT SCRIPT DONE =====
 ```
+You might also observe the following warning from the ChipWhisperer library: `(ChipWhisperer Target WARNING) Trouble parsing Verilog defines files (['../rtl/cw305/cw305_defines.v']): didn't find the right number of defines`. This is not a problem and you can safely ignore it.
+
 Now, please open the generated PDF report in `results/report.pdf`. This report contains:
-- The latency in clock cycles of UOV signing and verification using different parameter sets. This can be matched to Table 4 in the paper.
+- The latency in clock cycles of UOV signing and verification using different parameter sets. This can be matched to Table 4 and Table 6 in the paper.
 - The post-implementation area consumption in LUTs, REGs, DSPs, and BRAMs of the UOV co-processor. The reported area excludes the USB logic needed to interface between CW305 and host. The area results can be matched to Table 5 in the paper (bottom row).
 - The post-implementation timing of the design to demonstrate timing closure (target frequency is 100MHz)
 - The TVLA plot with RNG On and RNG Off using random messages/salts. This can be matched to Figure 4 in the paper. The RNG On case does not show leakage for 100k traces while the RNG Off case already leaks at 500 traces, showing the effectiveness of blinding.
@@ -137,9 +148,31 @@ This allows you to skip the Vivado and VitisHLS steps and you do not have to ins
 This will only report TVLA results in `results/report.pdf` since the other Vivado/VitisHLS-related results are not available.
 
 ## TVLA Methodology
-The default setting of the TVLA in this repo is a non-specific fixed versus random TVLA of the oil space matrix O using a toy parameter set. (For more information about the TVLA methodology, please refer to the [paper](https://eprint.iacr.org/2026/1451).) The TVLA performs two runs, one with enabled randomness (RNG On) with 100k traces per set, and one with disabled randomness (RNG Off) with only 500 traces per set. You can change the number of traces by adapting `NUM_TRACES_RNG_ON` and `NUM_TRACES_RNG_OFF` in `cw/mainCW305.py:32-33`.
+The default setting of the TVLA in this repo is a non-specific fixed versus random TVLA of the oil space matrix O using a toy parameter set. (For more information about the TVLA methodology, please refer to the [paper](https://eprint.iacr.org/2026/1451).) The TVLA performs two runs, one with enabled randomness (RNG On) with 100k traces per set, and one with disabled randomness (RNG Off) with only 500 traces per set. You can change the number of traces by adapting `NUM_TRACES_RNG_ON` and `NUM_TRACES_RNG_OFF` in `cw/mainCW305.py:30-31`. Note that the paper used 1M traces in the RNG On case, but trace collection takes multiple days in this case.
 
-In addition, we use random messages and salts for the TVLA, which matches real-world operation. You can change this to fixed message and fixed salt by changing `FIXED_MESSAGE` in `cw/mainCW305.py:34`.
+In addition, we use random messages and salts for the TVLA, which matches real-world operation. You can change this to fixed message and fixed salt by changing `FIXED_MESSAGE` in `cw/mainCW305.py:32`.
+
+## Troubleshooting
+**Linker error in VitisHLS:** The VitisHLS installation on Ubuntu often causes a linker error during the C Simulation. The error message looks like this:
+```
+/opt/Xilinx/Vivado/2022.2/tps/lnx64/binutils-2.37/bin/ld: skipping incompatible /usr/lib/x86_64-linux-gnu/libmvec.so.1 when searching for /usr/lib/x86_64-linux-gnu/libmvec.so.1
+collect2: error: ld returned 1 exit status
+make: *** [Makefile.rules:323: csim.exe] Error 1
+ERROR: [SIM 211-100] 'csim_design' failed: compilation error(s).
+INFO: [SIM 211-3] ***************
+```
+To fix this error, follow the instructions [here](https://gist.github.com/aitesam961/51a8dd9b785d0cc9f0bed5faf51e982e). Alternatively, create symlinks to the correct linker installation. Run the following with adapted paths matching your installation paths:
+```bash
+for d in /opt/Xilinx/Vivado/2022.2/tps/lnx64/binutils-2.37/bin \
+         /opt/Xilinx/Vitis_HLS/2022.2/tps/lnx64/binutils-2.37/bin; do
+  sudo mv "$d/ld" "$d/ld.orig"
+  sudo ln -s /usr/bin/ld "$d/ld"
+done
+```
+
+**Insufficient USB power supply:** In our experiments, the 500mA USB power supply was sufficient to program and operate the FPGA. If the USB power supply is insufficient, you can also use the 5V DC Jack, as described [here](https://rtfm.newae.com/Targets/CW305%20Artix%20FPGA/#power-supply). Keep the USB-B connected to the host machine, but flip switch (1) to use the DC Jack for power supply. The remaining steps of setup and artifact operation are the same. 
+
+**FPGA programming fails with connected 20-pin cable:** The FPGA programming might fail when the 20-pin interconnect is already connected to the CW305 board. The error looks like this: `(ChipWhisperer Target ERROR|File fpga.py:127) FPGA programming failed. Typically either bad bitstream or prog speed too high (current 10000000) (ChipWhisperer Scope ERROR|File __init__.py:402) ChipWhisperer error state detected. Resetting and retrying connection...`. To resolve this issue, uncomment lines 35-36 in `cw/mainCW305.py`, unplug the 20-pin connector, and start the script again. When the script asks you to plug in the 20-pin connector, do so and press Enter to run the FPGA. 
 
 ## Contributors
 Florian Krieger (Contact: `florian.krieger (at) tugraz.at`), Maciej Czuprynko, Sujoy Sinha Roy
@@ -151,7 +184,7 @@ We used generative AI (Claude Opus 4.8 and Claude Opus 5) for basic coding tasks
 
 This project has received funding from the European Union’s Horizon Europe research and innovation programme via the Rigoletto project (grant agreement ID: 101194371). It was also partially supported by the State Government of Styria, Austria - Department Zukunftsfonds Steiermark and through the FWF grant PAT6402023.
 
-We thank Tobias Schneider and Melissa Azouaoui from NXP Semiconductors for the helpful technical discussions and the valuable feedback. We also thank Florian Hirner from Graz University of Technology for hardware-related discussions.
+We thank Tobias Schneider and Melissa Azouaoui from NXP Semiconductors for the helpful technical discussions and the valuable feedback. We also thank Florian Hirner from Graz University of Technology for hardware-related discussions, and the anonymous reviewers of the CHES 2027 artifact evaluation committee for their effort and valuable feedback.
 
 ## License
 The code in this repository is licensed under the MIT License (see `LICENSE`), with the exception of the third-party components listed below. These components remain under the license of their original authors. The corresponding attribution and license notices are kept in the respective source files.

@@ -490,71 +490,75 @@ class UOV:
     ''' UOV's signing operation using esk with message msg. If debug_output is enabled,
         the data is written to files used for hardware testing '''
 
-    salt = salt_func(self.salt_len//8)
     seed_sk = esk[0]
-
-    # Hash message into vector t:
-    hash_in_bytes = msg + salt + seed_sk
-    if debug_output:
-      writeElements("hash_in_ref_" + self.name, hash_in_bytes)
-
-    t = self.hashVector(msg + salt, self.m)
-    if debug_output:
-      writeElements("t_ref_" + self.name, [_[0].to_integer() for _ in t])
 
     # Take a random seed for blinding:
     blinding_aes_seed = randbytes(self.pk_seed_len // 8)
     if debug_output:
       writeElements("seed_bl_" + self.name, blinding_aes_seed)
 
-    # UOV's main signing loop
-    for ctr in range(256):
-      # Sample vinegar vector v:
-      v = self.hashVector(msg + salt + esk[0] + ctr.to_bytes(1, 'little'), self.v)
+    while True:
+      salt = salt_func(self.salt_len//8)
+
+      # Hash message into vector t:
+      hash_in_bytes = msg + salt + seed_sk
       if debug_output:
-        writeElements("v_ref_" + self.name, [_[0].to_integer() for _ in v])
+        writeElements("hash_in_ref_" + self.name, hash_in_bytes)
 
-      # Perform blinding operation:
-      O_bar = esk[1]
-      R = self._getRandomLUMatrix(blinding_aes_seed, ctr)
-      O_bar_blinded = O_bar * R
-
-      # Compute linear equation system matrix L
-      L = matrix(self.F, self.m,self.m)
-      P1, P2 = self._expandP(cpk[0])
-      for i in range(self.m):
-        T = v.transpose() * block_matrix(1,2,[P1[i]+P1[i].transpose(),P2[i]])
-        L[i,:] = T * O_bar_blinded
-
+      t = self.hashVector(msg + salt, self.m)
       if debug_output:
-        writeMatrix("O_ref_" + self.name, O_bar)
-        writeMatrix("R_ref_" + self.name, R)
-        writeMatrix("Ob_ref_" + self.name, O_bar_blinded)
+        writeElements("t_ref_" + self.name, [_[0].to_integer() for _ in t])
 
-      # Compute RHS of linear equation system
-      y = [(v.transpose() * P1[i] * v)[0,0] for i in range(self.m)]
-      y = matrix(self.F, self.m, 1, y)
-      t_minus_y = t-y      
-
-      # Solve the equation system
-      x = self._gaussianElimination(L, t_minus_y)
-
-      if x is not None:
+      # UOV's main signing loop
+      for ctr in range(256):
+        # Sample vinegar vector v:
+        v = self.hashVector(msg + salt + esk[0] + ctr.to_bytes(1, 'little'), self.v)
         if debug_output:
-          writeVector("y_ref_" + self.name, x)
+          writeElements("v_ref_" + self.name, [_[0].to_integer() for _ in v])
 
-        # Compute the signature s:
-        s = block_matrix([[v],[matrix(self.F, self.m, 1)]]) + O_bar_blinded * x
+        # Perform blinding operation:
+        O_bar = esk[1]
+        R = self._getRandomLUMatrix(blinding_aes_seed, ctr)
+        O_bar_blinded = O_bar * R
+
+        # Compute linear equation system matrix L
+        L = matrix(self.F, self.m,self.m)
+        P1, P2 = self._expandP(cpk[0])
+        for i in range(self.m):
+          T = v.transpose() * block_matrix(1,2,[P1[i]+P1[i].transpose(),P2[i]])
+          L[i,:] = T * O_bar_blinded
+
         if debug_output:
-          writeVector("s_ref_" + self.name, s)
-        return s, salt
-      
-      elif debug_output:
-        print("ERROR! No solution exists on the first try. Take another seed by re-executing this script")
+          writeMatrix("O_ref_" + self.name, O_bar)
+          writeMatrix("R_ref_" + self.name, R)
+          writeMatrix("Ob_ref_" + self.name, O_bar_blinded)
+
+        # Compute RHS of linear equation system
+        y = [(v.transpose() * P1[i] * v)[0,0] for i in range(self.m)]
+        y = matrix(self.F, self.m, 1, y)
+        t_minus_y = t-y
+
+        # Solve the equation system
+        x = self._gaussianElimination(L, t_minus_y)
+
+        if x is not None:
+          if debug_output:
+            writeVector("y_ref_" + self.name, x)
+
+          # Compute the signature s:
+          s = block_matrix([[v],[matrix(self.F, self.m, 1)]]) + O_bar_blinded * x
+          if debug_output:
+            writeVector("s_ref_" + self.name, s)
+          return s, salt
+
+        elif debug_output:
+          # Only accept msg/salt pairs yielding a solvable system on the first try. Otherwise, TVLA traces are misaligned.
+          print("No solution for ctr=0, retrying " + self.name + " with a new salt")
+          break
+
+      else:
+        print("This must not be reached!")
         assert False
-
-    print("This must not be reached!")
-    assert False
 
   def verify(self, epk, msg, s, salt):
     ''' Verification of UOV using the epk, message msg, signature s, and salt '''

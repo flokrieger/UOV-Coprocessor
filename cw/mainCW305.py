@@ -32,6 +32,8 @@ NUM_TRACES_RNG_OFF = 500
 FIXED_MESSAGE = False # True: fixed message and salt, False: random message and salt
 bitstream_file = "../results/uov_cw.bit"
 target, scope  = initCW(bitstream_file, use_scope=True)
+# print("Plug in the 20-pin connector between Husky and CW305. Then, press Enter to continue")
+# input()
 
 #############################################
 # Test the BRAM interface:
